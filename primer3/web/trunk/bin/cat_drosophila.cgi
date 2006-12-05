@@ -1,12 +1,5 @@
-#!/usr/bin/perl
+#!/bin/sh
 
-print "Content-type: text/plain\n";
-print "\n";
-
-$file = "${DATA}drosophila.w.transposons.txt";
-
-open (fh, $file) || die "Can't open file: $file, not found\n";
-
-while (<fh>) {
-    print $_;
-}
+echo 'Content-type: text/plain'
+echo ''
+cat  drosophila.w.transposons.txt

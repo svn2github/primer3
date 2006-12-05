@@ -1,13 +1,5 @@
-#!/usr/bin/perl
+#!/bin/sh
 
-
-print "Content-type: text/plain\n";
-print "\n";
-
-$file = "${DATA}humrep_and_simple.txt";
-
-open (fh, "< $file") || die "Can't open $file";
-
-while (<fh>) {
-    print $_;
-}
+echo 'Content-type: text/plain'
+echo ''
+cat  humrep_and_simple.txt

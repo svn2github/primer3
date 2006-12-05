@@ -10,23 +10,21 @@ $MAINTAINER
 
 # Add mispriming / mishybing libraries;  make coordinate changes
 # in primer3_www.cgi
-
 %SEQ_LIBRARY=
     ('NONE' => '',
-     'HUMAN' => "${SEQDATA}humrep_and_simple.txt",
-     'RODENT_AND_SIMPLE' => "${SEQDATA}rodrep_and_simple.txt",
-     'RODENT' => "${SEQDATA}rodent_ref.txt",
-     'DROSOPHILA' => "${SEQDATA}drosophila.w.transposons.txt",
+     'HUMAN' => 'humrep_and_simple.txt',
+     'RODENT_AND_SIMPLE' => 'rodrep_and_simple.txt',
+     'RODENT' => 'rodent_ref.txt',
+     'DROSOPHILA' => 'drosophila.w.transposons.txt',
      # Put more repeat libraries here.
      );
 
 # The URL for help regarding this screen (which will normally
 # be in the same directory as the this script)
-$ODOC_URL = "${CGIBIN}/primer3_www_results_help.cgi";
+$ODOC_URL = "primer3_www_results_help.cgi";
 
 # The location of the primer3_core executable.
-# edit: no need for it, config scipt adds it above
-#$PRIMER_BIN =  "./primer3_core";
+$PRIMER_BIN =  "./primer3_core";
 
 # If you make any substantial modifications give this code a new
 # version designation.

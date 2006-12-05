@@ -1,9 +1,12 @@
-#!/usr/bin/perl -T
+#!C:/Perl/bin/perl.exe
 
-# 
-# kumi (kkhawi@gmail.com) made files/directories configurable, less hardcoding 11/28/06  
-#
-
+#SERVERROOT="C:/Program Files/Apache Software Foundation/Apache2.2/"
+$CGIBIN="cgi-bin/primer/";
+$PRIMER_BIN="primer3_core.exe";
+$HTML="/primer/";
+$SEQDATA="${HTML}data/";
+#DOC="${HTML}doc/";
+$PERL="C:/Perl/bin/perl.exe";
 
 # ----- Installer Modifiable Variables -------------------------------------
 # You may wish to modify the following variables to suit
@@ -15,7 +18,6 @@ $MAINTAINER
 
 # Add mispriming / mishybing libraries;  make coordinate changes
 # in input.htm
-
 %SEQ_LIBRARY=
     ('NONE' => '',
      'HUMAN' => "${SEQDATA}humrep_and_simple.txt",
@@ -27,17 +29,16 @@ $MAINTAINER
 
 # The URL for help regarding this screen (which will normally
 # be in the same directory as the this script)
-$ODOC_URL = "${CGIBIN}/primer3_www_results_help.cgi";
+$ODOC_URL = "${CGIBIN}primer3_www_results_help.cgi";
 
 # The location of the primer3_core executable.
 # It will be much easier if this is in the
 # same directory as this file.
-# edit: no need for this, the shell script will configure it
 #$PRIMER_BIN =  "./primer3_core";
 
 # If you make any substantial modifications give this code a new
 # version designation.
-$CGI_RELEASE = "(primer3_results.cgi release 0.3.1)"; # bumped up from 0.3.0
+$CGI_RELEASE = "(primer3_results.cgi release 0.3.0)";
 
 # ----- End Installer Modifiable Variables ---------------------------------
 
@@ -165,8 +166,8 @@ sub process_input {
     check_server_side_configuration($query);
 
     my @names = $query->param;
-    #my $cmd = "/bin/nice -19 $PRIMER_BIN -format_output -strict_tags";
-    my $cmd = "$PRIMER_BIN -format_output -strict_tags"; # removed dependency on nice(1)
+    # TODO; call Unix version with nice -19
+    my $cmd = "$PRIMER_BIN -format_output -strict_tags";
     my $line;
     my $fasta_id;
 
@@ -365,7 +366,7 @@ sub process_input {
 
     }
     if (!$primer3_pid) {
-	print "Cannot excecure $cmd:<br>$!";
+	print "Cannot excecute $cmd:<br>$!; Pid unknown";
         print "$wrapup\n";
         exit;    
     }
@@ -545,3 +546,4 @@ sub len_to_delim($$$) {
     print "<br>ERROR IN SEQUENCE: closing delimiter $d1 did not follow $d0\n";
     return undef;
 }
+
