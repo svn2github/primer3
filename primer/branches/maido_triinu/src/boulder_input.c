@@ -219,7 +219,9 @@ read_record(prog_args, pa, sa)
 	    COMPARE_FLOAT("PRIMER_MIN_TM", pa->min_tm);
 	    COMPARE_FLOAT("PRIMER_MAX_TM", pa->max_tm);
 	    COMPARE_FLOAT("PRIMER_MAX_DIFF_TM", pa->max_diff_tm);
-	    COMPARE_FLOAT("PRIMER_MIN_GC", pa->min_gc);
+	    COMPARE_INT("PRIMER_TM_SANTALUCIA", pa->tm_santalucia); /* added by T.Koressaar */
+	    COMPARE_INT("PRIMER_SALT_CORRECTIONS", pa->salt_corrections); /* added by T.Koressaar */
+ 	    COMPARE_FLOAT("PRIMER_MIN_GC", pa->min_gc);
 	    COMPARE_FLOAT("PRIMER_MAX_GC", pa->max_gc);
 	    COMPARE_FLOAT("PRIMER_SALT_CONC", pa->salt_conc);
 	    COMPARE_FLOAT("PRIMER_DNA_CONC", pa->dna_conc);
@@ -320,7 +322,7 @@ read_record(prog_args, pa, sa)
 	    }
 	    if (COMPARE("PRIMER_COMMENT") || COMPARE("COMMENT")) continue;
 	    COMPARE_FLOAT("PRIMER_MAX_END_STABILITY", pa->max_end_stability);
-
+	   COMPARE_INT("PRIMER_LOWERCASE_MASKING", pa->lowercase_masking); /* added by T.Koressaar */
 	    /* weights for objective functions  */
 
             /* CHANGE TEMP/temp -> TM/tm */

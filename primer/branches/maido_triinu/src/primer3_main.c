@@ -35,7 +35,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include <signal.h>
 #include <unistd.h>
+#include <errno.h>
 #include <float.h>
+/* edited by T. Koressaar for lowercase masking */
+#include <ctype.h>
 #include "primer3_release.h"
 #include "format_output.h"
 #include "dpal.h"
@@ -43,6 +46,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "primer3.h"
 #include "boulder_input.h"
 
+/* Type definitions. */
 /* #define's */
 
 /* 
@@ -52,15 +56,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define OOM_MESSAGE      ": out of memory\n"
 #define OOM_MESSAGE_LEN  16
 #define OOM_STMT1 write(2, pr_program_name, pr_program_name_len)
-#define OOM_STMT2 write(2, OOM_MESSAGE, OOM_MESSAGE_LEN), exit(-2)
+#define OOM_STMT2 write(2, OOM_MESSAGE, OOM_MESSAGE_LEN), exit(ENOMEM)
 #define OOM_ERROR OOM_STMT1, OOM_STMT2
 
 #ifndef MAX_PRIMER_LENGTH
-#error "Define MAX_PRIMER_LENGTH in Makefile..."
-  /* to ensure that MAX_PRIMER_LENGTH <= DPAL_MAX_ALIGN. */
-#endif
-#if (MAX_PRIMER_LENGTH > DPAL_MAX_ALIGN) 
-#error "MAX_PRIMER_LENGTH must be <= DPAL_MAX_ALIGN"
+#error "Important note: MAX_PRIMER_LENGTH must be defined in
+the makefile, because its value must be <= the
+value of DPAL_MAX_ALIGN."
 #endif
 
 #define MAX_NN_TM_LENGTH 36 /* The maxium length for which to use the
@@ -156,6 +158,12 @@ static int    pair_repeat_sim(primer_pair *, const primer_args *);
 static void   boulder_print_oligos(const primer_args *, 
 					 const seq_args *, int, oligo_type);
 static void   free_repeat_sim_score(int, int, int);
+
+/* edited by T. Koressaar for lowercase masking */
+static void check_if_masked_by_gmasker( const int position,const int test,const char *sequence
+					, primer_rec *h);
+
+static void upcase(char *seq);
 
 /* Global static variables. */
 static const char * copyright[] = {
@@ -261,7 +269,7 @@ main(argc,argv)
 
     best_pairs.storage_size = best_pairs.num_pairs = 0;
     pr_set_default_global_args(pa);
-
+   
     memset(&prog_args, 0, sizeof(prog_args));
     while (--argc > 0) {
 	argv++;
@@ -293,13 +301,15 @@ main(argc,argv)
      */
     while ((read_record(&prog_args, pa, sa)) > 0) {
 	input_found = 1;
-
+       
 	*lib_local_dpal_args = *local_args;
+	/* NEW */
 	if (pa->lib_ambiguity_codes_consensus) {
 	  PR_ASSERT(dpal_set_ambiguity_code_matrix(lib_local_dpal_args));
 	}
 
 	*lib_local_end_dpal_args = *local_end_args;
+	/* NEW */
 	if (pa->lib_ambiguity_codes_consensus) {
 	  PR_ASSERT(dpal_set_ambiguity_code_matrix(lib_local_end_dpal_args));
 	}
@@ -338,7 +348,6 @@ main(argc,argv)
         }
 
 	best_pairs.num_pairs = 0;
-
 	if(pa->repeat_lib.seq_num > 0 || pa->io_mishyb_library.seq_num > 0) 
 	  free_repeat_sim_score(n_f, n_r, n_m);
 	if (NULL != sa->internal_input) free(sa->internal_input);
@@ -346,7 +355,9 @@ main(argc,argv)
 	if (NULL != sa->right_input) free(sa->right_input);
 	if (NULL != sa->sequence) free(sa->sequence);
 	if (NULL != sa->quality)  free(sa->quality);
-	if (NULL != sa->trimmed_seq) free(sa->trimmed_seq);
+       if (NULL != sa->trimmed_seq) free(sa->trimmed_seq);
+       /* edited by T. Koressaar for lowercase masking */
+       if (NULL != sa->orig_seq) free(sa->orig_seq);
 	if (NULL != sa->upcased_seq) free(sa->upcased_seq);
 	if (NULL != sa->sequence_name) free(sa->sequence_name);
 	if (NULL != sa->error.data) free(sa->error.data);
@@ -503,7 +514,8 @@ add_must_use_warnings(sa, text, stats)
   if (stats->seq_quality) pr_append_w_sep(&s, sep, "Low sequence quality");
   if (stats->stability) pr_append_w_sep(&s, sep, "High 3' stability");
   if (stats->no_orf) pr_append_w_sep(&s, sep, "Would not amplify any ORF");
-
+   /* edited by T. Koressaar for lowercase masking */
+   if (stats->gmasked) pr_append_w_sep(&s, sep, "Masked with lowercase letter");
   if (s.data) {
     pr_append_new_chunk(&sa->warning, text);
     pr_append(&sa->warning, " is unacceptable: ");
@@ -843,8 +855,22 @@ oligo_param(pa, h, l, local_args, end_args, local_end_args, sa, stats)
     else {j = h->start-h->length+1; k=h->start;}
 
     PR_ASSERT(k >= 0);
-    PR_ASSERT(k < TRIMMED_SEQ_LEN(sa));
-
+   PR_ASSERT(k < TRIMMED_SEQ_LEN(sa));
+   
+   /* edited by T. Koressaar for lowercase masking */
+   if(pa->lowercase_masking==1) {
+      if(l==OT_LEFT) {
+	 check_if_masked_by_gmasker(k,0,sa->orig_seq,h);
+      }
+      if(l==OT_RIGHT) {
+	 check_if_masked_by_gmasker(j,1,sa->orig_seq,h);
+      }
+      if(h->ok==OV_GMASKED) {
+	 stats->gmasked++;
+	 if (!must_use) return;
+      }
+   }
+   /* end */
     gc_and_n_content(j, k-j+1, sa->trimmed_seq, h);
 
     if (((OT_LEFT == l || OT_RIGHT == l) && 
@@ -921,15 +947,19 @@ oligo_param(pa, h, l, local_args, end_args, local_end_args, sa, stats)
     }
     if(pa->gc_clamp != 0){
        if(OT_LEFT == l){
-	   for(i=k-pa->gc_clamp+1; i<= k; i++)if(seq[i] !='G'&&seq[i] !='C'){
-	       h->ok = OV_GC_CLAMP;
+	  /* edited by T. Koressaar for lowercase masking
+	  for(i=k-pa->gc_clamp+1; i<= k; i++)if(seq[i] !='G'&&seq[i] !='C'){ */
+	  for(i=k-pa->gc_clamp+1; i<= k; i++)if(seq[i] !='G'&&seq[i] !='C'&&seq[i]!='g'&&seq[i]!='c') {
+	     h->ok = OV_GC_CLAMP;
 	       stats->gc_clamp++;
 	       if (!must_use) return; else break;
            }
        }
        if(OT_RIGHT == l){
-	   for(i=j; i<j+pa->gc_clamp; i++)if(seq[i] != 'G' && seq[i] != 'C'){
-	       h->ok = OV_GC_CLAMP;
+	  /* edited by T. Koressaar for lowercase masking
+	  for(i=j; i<j+pa->gc_clamp; i++)if(seq[i] != 'G' && seq[i] != 'C'){ */
+	  for(i=j; i<j+pa->gc_clamp; i++)if(seq[i] != 'G' && seq[i] != 'C'&&seq[i]!='g'&&seq[i]!='c') {
+	     h->ok = OV_GC_CLAMP;
 	       stats->gc_clamp++;
 	       if (!must_use) return; else break;
            }
@@ -975,10 +1005,11 @@ oligo_param(pa, h, l, local_args, end_args, local_end_args, sa, stats)
      }
 
     _pr_substr(seq,j,k-j+1,s1);
-    if(OT_LEFT == l || OT_RIGHT == l) 
-      h->temp = seqtm(s1, pa->dna_conc, pa->salt_conc, MAX_NN_TM_LENGTH);
+                   
+   if(OT_LEFT == l || OT_RIGHT == l) 
+      h->temp = seqtm(s1, pa->dna_conc, pa->salt_conc, MAX_NN_TM_LENGTH,pa->tm_santalucia,pa->salt_corrections);
     else
-      h->temp = seqtm(s1, pa->io_dna_conc, pa->io_salt_conc, MAX_NN_TM_LENGTH);
+      h->temp = seqtm(s1, pa->io_dna_conc, pa->io_salt_conc, MAX_NN_TM_LENGTH,pa->tm_santalucia,pa->salt_corrections);
     if (((l == OT_LEFT || l == OT_RIGHT) && h->temp < pa->min_tm)
 	|| (l==OT_INTL && h->temp<pa->io_min_tm)) {
 	h->ok = OV_TM_LOW;
@@ -992,7 +1023,7 @@ oligo_param(pa, h, l, local_args, end_args, local_end_args, sa, stats)
 	if (!must_use) return;
     }
     if (OT_LEFT == l) {
-      if ((h->end_stability = end_oligodg(s1, 5))
+      if ((h->end_stability = end_oligodg(s1, 5,pa->tm_santalucia))
 	  > pa->max_end_stability) {
 	h->ok = OV_END_STAB;
 	stats->stability++;
@@ -1000,7 +1031,7 @@ oligo_param(pa, h, l, local_args, end_args, local_end_args, sa, stats)
       }
     } else if (OT_RIGHT == l) {
       _pr_reverse_complement(s1, s1_rev);
-      if ((h->end_stability = end_oligodg(s1_rev, 5))
+      if ((h->end_stability = end_oligodg(s1_rev, 5,pa->tm_santalucia))
 	  > pa->max_end_stability) {
 	  h->ok = OV_END_STAB;
 	  stats->stability++;
@@ -1123,7 +1154,9 @@ gc_and_n_content(start, len, sequence, h)
 	    num_n++;
 	else {
 	    num_gcat++;
-	    if ('C' == *p || 'G' == *p) num_gc++;
+	    /* edited by T. Koressaar for lowercase masking 
+	     if ('C' == *p || 'G' == *p) num_gc++; */
+	   if ('C' == *p || 'G' == *p ||'c' == *p || 'g' == *p) num_gc++;
 	}
 	p++;
     }
@@ -2067,7 +2100,6 @@ boulder_print_pairs(prog_args, pa, sa, best_pairs)
 	  printf("PRIMER_RIGHT%s_POSITION_PENALTY=%f\n", suffix,
 		 rev->position_penalty);
 	}
-
 	printf("PRIMER_LEFT%s_END_STABILITY=%.4f\n",
 	       suffix, fwd->end_stability);
 	printf("PRIMER_RIGHT%s_END_STABILITY=%.4f\n",
@@ -2297,7 +2329,9 @@ print_explain(stat, l)
     if (stat->stability) printf(",high 3' stability %d", stat->stability);
     if (stat->template_mispriming) printf(",high template mispriming score %d",
 					  stat->template_mispriming);
-
+   /* edited by T. Koressaar for lowercase masking */
+   if(stat->gmasked) printf(",lowercase masking of 3' end %d",stat->gmasked);
+   
     printf(", ok %d\n", stat->ok);
 }
 
@@ -2380,11 +2414,17 @@ set_dpal_args(a)
     memset(a, 0, sizeof(*a));
     for (i = 0; i <= UCHAR_MAX; i++)
 	for (j = 0; j <= UCHAR_MAX; j++)
-	    if (('A' == i || 'C' == i || 'G' == i || 'T' == i || 'N' == i)
+	  /*  edited by T. Koressaar for lowercase masking 
+	   if (('A' == i || 'C' == i || 'G' == i || 'T' == i || 'N' == i)
 		&& ('A' == j || 'C' == j || 'G' == j || 'T' == j 
-		    || 'N' == j)) {
-		    if (i == 'N' || j == 'N') 
-			a->ssm[i][j] = -25;
+		    || 'N' == j)) { */
+       if (('A' == i || 'C' == i || 'G' == i || 'T' == i || 'N' == i||
+	    'a' == i || 'c' == i || 'g' == i || 't' == i )
+	   && ('A' == j || 'C' == j || 'G' == j || 'T' == j || 'N' == j||
+	       'a' == j || 'c' == j || 'g' == j || 't' == j ))
+	 {
+	    if (i == 'N' || j == 'N') 
+	      a->ssm[i][j] = -25;
 		    else if (i == j)
 			a->ssm[i][j] = 100;
 		    else 
@@ -2418,7 +2458,8 @@ pr_oligo_sequence(sa, o)
     PR_ASSERT(o->start + sa->incl_s >= 0);
     PR_ASSERT(o->start + sa->incl_s + o->length <= seq_len);
     _pr_substr(sa->sequence, sa->incl_s + o->start, o->length, s);
-    return &s[0];
+   upcase(s);
+   return &s[0];
 }
 
 char *
@@ -2436,7 +2477,8 @@ pr_oligo_rev_c_sequence(sa, o)
     PR_ASSERT(start + o->length <= seq_len);
     _pr_substr(sa->sequence, start, o->length, s);
     _pr_reverse_complement(s,s1);
-    return &s1[0];
+   upcase(s1); 
+   return &s1[0];
 }
 
 static void
@@ -2898,5 +2940,32 @@ int n_f, n_r, n_m;
      { free(mid[i].repeat_sim.score); mid[i].repeat_sim.score = NULL; }
 }
 
+/* edited by T. Koressaar for lowercase masking
+ This function checks if the three prime end of 
+ the primer has been masked by lowercase letter
+ Created/Added by Eric Reppo, July 9,2002
+ */
+
+static void
+  check_if_masked_by_gmasker(position,test, sequence,h)
+    const int position,test;
+const char *sequence;
+primer_rec *h;
+{   
+   const char* p = &sequence[position];
+   if ('a' == *p || 'c' == *p ||'g' == *p || 't' == *p) {
+      h->ok=OV_GMASKED;
+   }
+}
+
+
+static void
+  upcase(char *seq)
+{
+   int i,len;
+   len=strlen(seq);
+   for(i=0;i<len;i++)
+     seq[i]=toupper(seq[i]);
+}
 
 /* =========================================================== */

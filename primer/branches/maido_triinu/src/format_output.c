@@ -456,8 +456,8 @@ print_explain(f, pa, sa, print_lib_sim)
 {
   const pair_stats *x;
   const char *format = print_lib_sim
-    ? "%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s\n"
-    : "%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s\n";
+    ? "%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s\n"
+    : "%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s\n";
 
   fprintf(f, "\nStatistics\n");
 
@@ -477,28 +477,28 @@ print_explain(f, pa, sa, print_lib_sim)
       fprintf(f, format,
 	      "", "con", "too",  "in",  "in",  "",    "no",
 	      "tm",  "tm",  "high", "high", "high",
-	      "", "high", "");
+	      "", "high", " lower", "");
       fprintf(f, format,
 	      "", "sid", "many", "tar", "excl", "bad","GC",
 	      "too", "too", "any",  "3'", "lib",
-	      "poly", "end", "");
+	      "poly", "end", " case", "");
       fprintf(f, format,
 	      "", "ered","Ns",   "get", "reg",  "GC%", "clamp",
 	      "low", "high","compl", "compl", "sim",
-	      "X",  "stab", "ok");
+	      "X",  "stab", " end", "ok  ");
     } else {
       fprintf(f, format,
 	      "", "con", "too",  "in",  "in",  "",    "no",
 	      "tm",  "tm",  "high", "high",
-	      "", "high", "");
+	      "", "high", " lower", "");
       fprintf(f, format,
 	      "", "sid", "many", "tar", "excl", "bad","GC",
 	      "too", "too", "any",  "3'",
-	      "poly", "end", "");
+	      "poly", "end", " case", "");
       fprintf(f, format,
 	      "", "ered","Ns",   "get", "reg",  "GC%", "clamp",
 	      "low", "high","compl", "compl",
-	      "X", "stab", "ok");
+	      "X", "stab", " end", "ok  ");
     }
 
   }
@@ -536,21 +536,25 @@ print_stat_line(f, t, s, print_lib_sim)
     oligo_stats s;
     int print_lib_sim;
 {
+   /* edited by T. Koressaar to print information about lowercase masking
     const char *format = print_lib_sim
 	? "%-6s%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d\n"
-	: "%-6s%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d\n";
+	: "%-6s%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d\n"; */
+   const char *format = print_lib_sim
+          ? "%-6s%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d\n"
+     : "%-6s%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d%6d\n";
 
     if (print_lib_sim)
 	fprintf(f, format,
 		t, s.considered, s.ns, s.target, s.excluded,
 		s.gc, s.gc_clamp, s.temp_min, s.temp_max,
 		s.compl_any, s.compl_end, s.repeat_score,
-		s.poly_x, s.stability, s.ok);
+		s.poly_x, s.stability, s.gmasked, s.ok);
     else 
 	fprintf(f, format,
 		t, s.considered, s.ns, s.target, s.excluded,
 		s.gc, s.gc_clamp, s.temp_min, s.temp_max,
-		s.compl_any, s.compl_end, s.poly_x, s.stability, s.ok);
+		s.compl_any, s.compl_end, s.poly_x, s.stability, s.gmasked, s.ok);
 }
 
 /* 

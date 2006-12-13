@@ -115,12 +115,22 @@ dpal_set_default_nt_args(a)
 {
     unsigned int i, j;
 
-    memset(a, 0, sizeof(*a));
-    for (i = 0; i <= UCHAR_MAX; i++)
-	for (j = 0; j <= UCHAR_MAX; j++)
-	    if (('A' == i || 'C' == i || 'G' == i || 'T' == i || 'N' == i)
-		&& ('A' == j || 'C' == j || 'G' == j || 'T' == j 
-		    || 'N' == j)) {
+   memset(a, 0, sizeof(*a));
+   for (i = 0; i <= UCHAR_MAX; i++)
+     for (j = 0; j <= UCHAR_MAX; j++)
+       
+       /* edited by T. Koressaar to make sense insensitive 
+	if (('A' == i || 'C' == i || 'G' == i || 'T' == i || 'N' == i) 
+	&& ('A' == j || 'C' == j || 'G' == j || 'T' == j 
+	|| 'N' == j)) { */
+              
+       if (('A' == i || 'C' == i || 'G' == i || 'T' == i || 'N' == i||
+	    'a' == i || 'c' == i || 'g' == i || 't' == i )
+	   && ('A' == j || 'C' == j || 'G' == j || 'T' == j || 'N' == j
+	       || 'a' == j || 'c' == j || 'g' == j || 't' == j ))
+	 {
+	    
+	  
 		    if (i == 'N' || j == 'N') 
 			a->ssm[i][j] = -25;
 		    else if (i == j)
@@ -148,16 +158,23 @@ dpal_set_h_nt_matrix(a)
     dpal_args *a;
 {
     unsigned int i, j;
-
     for (i = 0; i <= UCHAR_MAX; i++)
 	for (j = 0; j <= UCHAR_MAX; j++)
+       /* edited by T. Koressaar to make sense insensitive
 	    if (('A' == i || 'C' == i || 'G' == i || 'T' == i || 'N' == i)
 		&& ('A' == j || 'C' == j || 'G' == j || 'T' == j 
-		    || 'N' == j)) {
-		    if (i == 'N' || j == 'N') 
+		    || 'N' == j)) { */
+       if (('A' == i || 'C' == i || 'G' == i || 'T' == i || 'N' == i||
+	    'a' == i || 'c' == i || 'g' == i || 't' == i )
+	   && ('A' == j || 'C' == j || 'G' == j || 'T' == j || 'N' == j ||
+	       'a' == j || 'c' == j || 'g' == j || 't' == j ))
+	 {
+	    if (i == 'N' || j == 'N') 
 			a->ssm[i][j] = -50;
 		    else if (i == j) {
-		      if ('C' == i || 'G' == i)
+		       /* edited by T. Koressaar to make sense insensitive
+		      if ('C' == i || 'G' == i) */
+		       if ('C' == i || 'G' == i||'c'==i||'g'==i)
 			a->ssm[i][j] = 300;
 		      else
 			a->ssm[i][j] = 200;

@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static int    check_intervals(const char *, const int,
 			      interval_array_t, const int, seq_args *);
 static char   dna_to_upper(char *, int);
+static char   dna_to_upper2(char *, int); /* edited by T. Koressaar for lowercase masking */
 static char   *strstr_nocase(char *, char *);
 
 
@@ -53,6 +54,8 @@ static char   *strstr_nocase(char *, char *);
 #define MIN_TM             57.0
 #define MAX_TM             63.0
 #define MAX_DIFF_TM       100.0
+#define TM_SANTALUCIA       1 /* added by T.Koressaar for table of thermodynamics of SantaLucia 1998  */
+#define SALT_CORRECTIONS    1 /* added by T.Koressaar for salt correction for Tm calculation */ 
 #define DEFAULT_OPT_GC_PERCENT PR_UNDEFINED_INT_OPT
 #define MIN_GC             20.0
 #define MAX_GC             80.0
@@ -93,6 +96,7 @@ static char   *strstr_nocase(char *, char *);
 #define QUALITY_RANGE_MIN           0
 #define QUALITY_RANGE_MAX         100
 #define DEFAULT_MAX_END_STABILITY    100.0
+#define LOWERCASE_MASKING           1 /* added by T.Koressaar for enableing to design primers from lowercase masked template*/
 #define PRIMER_PRODUCT_OPT_SIZE      PR_UNDEFINED_INT_OPT
 #define PRIMER_PRODUCT_OPT_TM        PR_UNDEFINED_DBL_OPT
 #define MAX_TEMPLATE_MISPRIMING      PR_UNDEFINED_ALIGN_OPT
@@ -158,6 +162,8 @@ pr_set_default_global_args(a)
     a->min_tm           = MIN_TM;
     a->max_tm           = MAX_TM;
     a->max_diff_tm      = MAX_DIFF_TM;
+    a->tm_santalucia    = TM_SANTALUCIA; /* added by T.Koressaar */
+    a->salt_corrections = SALT_CORRECTIONS; /* added by T.Koressaar */
     a->min_gc           = MIN_GC;
     a->opt_gc_content   = DEFAULT_OPT_GC_PERCENT;
     a->max_gc           = MAX_GC;
@@ -188,6 +194,7 @@ pr_set_default_global_args(a)
     a->outside_penalty   = PR_DEFAULT_OUTSIDE_PENALTY;
     a->inside_penalty    = PR_DEFAULT_INSIDE_PENALTY;
     a->max_end_stability = DEFAULT_MAX_END_STABILITY;
+    a->lowercase_masking = LOWERCASE_MASKING; /* added by T.Koressaar */
     a->product_max_tm    = PR_DEFAULT_PRODUCT_MAX_TM;
     a->product_min_tm    = PR_DEFAULT_PRODUCT_MIN_TM;
     a->product_opt_tm    = PRIMER_PRODUCT_OPT_TM;
@@ -419,7 +426,11 @@ _pr_data_control(pa, sa)
 
     sa->trimmed_seq = pr_safe_malloc(sa->incl_l + 1);
     _pr_substr(sa->sequence, sa->incl_s, sa->incl_l, sa->trimmed_seq);
-
+   
+   /* edited by T. Koressaar for lowercase masking */
+   sa->orig_seq = pr_safe_malloc(sa->incl_l + 1);
+   _pr_substr(sa->sequence, sa->incl_s, sa->incl_l, sa->orig_seq);
+   
     sa->upcased_seq = pr_safe_malloc(strlen(sa->sequence) + 1);
     strcpy(sa->upcased_seq, sa->sequence);
     if ((offending_char = dna_to_upper(sa->upcased_seq, 1))) {
@@ -490,7 +501,18 @@ _pr_data_control(pa, sa)
 	return 1;
       }
     }
-
+   /* edited by T. Koressaar for lowercase masking */
+   if ((offending_char = dna_to_upper2(sa->orig_seq, 0))) {
+      if (pa->liberal_base){
+	 pr_append_new_chunk(&sa->warning,
+			     "Unrecognized base in input sequence");
+      } else {
+	   pr_append_new_chunk(&sa->error, "Unrecognized base in input sequence");
+	   return 1;
+	}
+   }
+    
+   /*********/
     if(pa->opt_tm < pa->min_tm || pa->opt_tm > pa->max_tm) {
 	 pr_append_new_chunk(&pa->glob_err,
 			     "Optimum primer Tm lower than minimum or higher than maximum");
@@ -780,6 +802,63 @@ dna_to_upper(s, ambiguity_code_ok)
     p++;
   }
   return unrecognized_base;
+}
+
+/* edited by T. Koressaar for lowercase masking */
+static char
+  dna_to_upper2(s, ambiguity_code_ok)
+        char * s;
+    int ambiguity_code_ok;
+{   
+   char *p = s;
+   int unrecognized_base = '\0';
+   while (*p)  {
+      switch (*p) {
+       case 'a': *p='a'; break;
+       case 'c': *p='c'; break;
+       case 'g': *p='g'; break;
+       case 't': *p='t'; break;
+       case 'n': *p='n'; break;
+       case 'A': *p='A'; break;
+       case 'C': *p='C'; break;
+       case 'G': *p='G'; break;
+       case 'T': *p='T'; break;
+       case 'N': *p='N'; break;
+       default:
+	 if (ambiguity_code_ok) 
+	   {
+	      switch (*p) 
+		{
+		 case 'r': *p = 'r'; break;
+		 case 'y': *p = 'y'; break;
+		 case 'm': *p = 'm'; break;
+		 case 'w': *p = 'w'; break;
+		 case 's': *p = 's'; break;
+		 case 'k': *p = 'k'; break;
+		 case 'd': *p = 'd'; break;
+		 case 'h': *p = 'h'; break;
+		 case 'v': *p = 'v'; break;
+		 case 'b': *p = 'b'; break;
+		 case 'R': *p = 'R'; break;
+		 case 'Y': *p = 'Y'; break;
+		 case 'M': *p = 'M'; break;
+		 case 'W': *p = 'W'; break;
+		 case 'S': *p = 'S'; break;
+		 case 'K': *p = 'K'; break;
+		 case 'D': *p = 'D'; break;
+		 case 'H': *p = 'H'; break;
+		 case 'V': *p = 'V'; break;
+		 case 'B': *p = 'B'; break;
+		}
+	   } else {
+	      if (!unrecognized_base) unrecognized_base = *p;
+	      *p = 'N';
+	   }
+	 break;
+      }
+      p++;
+   }
+   return unrecognized_base;
 }
 
 int

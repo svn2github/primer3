@@ -521,10 +521,8 @@ PRIMER_OPT_TM (float, default 60.0C)
 Optimum melting temperature(Celsius) for a primer oligo. Primer3
 will try to pick primers with melting temperatures are close to
 this temperature.  The oligo melting temperature formula in
-Primer3 is that given in Rychlik, Spencer and Rhoads, Nucleic
-Acids Research, 18(21): 6409-6412 and Breslauer,
-Frank, Bloeker and Marky, PNAS, 83: 3746-3750.
-Please refer to the former paper for background discussion.
+Primer3 can be specified by user. Please see PRIMER_TM_SANTALUCIA for more
+information.
 
 PRIMER_MIN_TM (float, default 57.0C)
 
@@ -540,6 +538,50 @@ PRIMER_MAX_DIFF_TM (float, default 100.0C)
 
 Maximum acceptable (unsigned) difference between the melting
 temperatures of the left and right primers.
+
+PRIMER_TM_SANTALUCIA (int, default 1)
+
+Option for the table of thermodynamic parameters and for the method of
+melting temperature calculation. The default value of [1] corresponds 
+to the table of thermodynamic values and to the method for melting 
+temperature calculation suggested by SantaLucia, 1998 [See paper "SantaLucia 
+JR. (1998). A unified view of polymer, dumbbell and oligonucleotide DNA 
+nearest-neighbor thermodynamics. Proc. Natl. Acad. Sci., 95, 1460-65."].
+The value of [0] is corresponding to the table of thermodynamic parameters 
+of Breslauer et al., 1986 and to the method for melting temperature 
+calculation suggested by Rychlik et al., 1990 (this is used by Primer3 
+until version 1.0.1) [See papers "Breslauer KJ, Frank R, Blöcker H and 
+Marky LA. (1986) Predicting DNA duplex stability from the base sequence. 
+Proc. Natl. Acad. Sci., 83, 4746-50." and "Rychlik W, Spencer WJ and Rhoads 
+RE. (1990) Optimization of the annealing temperature for DNA amplification 
+in vitro. Nucleic Acids Res., 118, 6409-12."]. For specifying the salt 
+correction method for melting temperature calculation see PRIMER_SALT_CORRECTIONS
+
+PRIMER_SALT_CORRECTIONS (int, default 1)
+
+Option for specifying the salt correction formula for the melting temperature
+calculation. The default value of [1] corresponds to the salt correction
+formula suggested by SantaLucia, 1998 (See paper "SantaLucia JR. (1998). A
+unified view of polymer, dumbbell and oligonucleotide DNA nearest-neighbor
+thermodynamics. Proc. Natl. Acad. Sci., 95, 1460-65."). The value of [0] 
+corresponds to salt correction formula suggested by Schildkraut and Lifson 
+1965 (this is used by Primer3 until version 1.0.1) (See paper "Schildkraut, 
+C, and Lifson, S. (1965) Dependence of the melting temperature of DNA on 
+salt concentration. Biopolymers, 3, 195-208."). The value [2] corresponds to
+the salt correction formula suggested by Owczarzy et al., 2004 (See paper
+"Owczarzy R, You Y, Moreira BG, Manthey JA, Huang L, Behlke MA and Walder
+JA. (2004) Effects of Sodium Ions on DNA Duplex Oligomers: Improved
+Predictions of Melting Temperatures. Biochemistry, 43, 3537-54.").
+
+PRIMER_LOWERCASE_MASKING (int, default 1)
+
+If set to 1, candidate primers having lowercase letter exactly at 3' end are rejected. 
+This option allows to design primers overlapping lowercase-masked 
+regions. This property relies on the assumption that masked features 
+(e.g. repeats) can partly overlap primer, but they cannot overlap the 
+3'-end of the primer. In other words, the lowercase letters in other 
+positions are accepted, assuming that the masked features do not influence 
+the primer performance if they do not overlap the 3'-end of primer.
 
 PRIMER_MIN_GC (float, default 20.0%)
 
@@ -744,18 +786,23 @@ nearness to the target as a term in the objective function.
 
 PRIMER_MAX_END_STABILITY (float 999.9999, default 100.0)
 
-The maximum stability for the five 3' bases of a left or right
+The maximum stability for the last five 3' bases of a left or right
 primer.  Bigger numbers mean more stable 3' ends.  The value is
-the maximum delta G for duplex disruption for the five 3' bases
-as calculated using the nearest neighbor parameters published in
-Breslauer, Frank, Bloeker and Marky, Proc. Natl. Acad. Sci. USA,
-vol 83, pp 3746-3750.  Primer3 uses a completely permissive
-default value for backward compatibility (which we may change in
-the next release).  Rychlik recommends a maximum value of 9
-(Wojciech Rychlik, "Selection of Primers for Polymerase Chain
-Reaction" in BA White, Ed., "Methods in Molecular Biology,
-Vol. 15: PCR Protocols: Current Methods and Applications", 1993,
-pp 31-40, Humana Press, Totowa NJ).
+the maximum delta G (kcal/mol) for duplex disruption for the five 3' bases
+as calculated using the Nearest-Neighbor parameter values specified by
+PRIMER_TM_SANTALUCIA. If PRIMER_TM_SANTALUCIA is set to [1] (the default
+value) the table of thermodynamic parameters suggested by SantaLucia 1998,
+["SantaLucia JR. (1998). A unified view of polymer, dumbbell 
+and oligonucleotide DNA nearest-neighbor thermodynamics. Proc. 
+Natl. Acad. Sci., 95, 1460-65."] parameter values are used; if PRIMER_TM_SANTALUCIA is set 
+to [0] the table of thermodynamic values published by Breslauer 
+et al. 1986, ["Breslauer KJ, Frank R, Blöcker H and Marky 
+LA. (1986) Prediciting DNA duplex stability from the base sequence. 
+Proc. Natl. Acad. Sci., 83, 4746-50."] parameter values are used.
+If PRIMER_TM_SANTALUCIA=1 the deltaG values for the most stable and for the
+most labile 5mer duplex are 6.86 kcal/mol (GCGCG) and 0.86 kcal/mol (TATAT) respectively.
+If PRIMER_TM_SANTALUCIA=0 the deltaG values for the most stable and for the
+most labile 5mer are 13.4 kcal/mol (GCGCG) and 4.6 kcal/mol (TATAC) respectively.
 
 PRIMER_PRODUCT_OPT_TM (float, default 0.0)
 
