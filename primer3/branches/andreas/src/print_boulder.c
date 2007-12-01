@@ -95,8 +95,9 @@ boulder_print_pairs(prog_args, pa, sa, best_pairs)
 	fwd = best_pairs->pairs[i].left;
 	rev = best_pairs->pairs[i].right;
 	intl = best_pairs->pairs[i].intl;
-
-	if (i == 0) suffix[0] = '\0';
+    
+	/* AU fix for the 0 for scripting the output */
+	if ((i == 0) && (prog_args->io_version < 1) ) suffix[0] = '\0';
 	else sprintf(suffix, "_%d", i);
 
 	printf("PRIMER_PAIR_PENALTY%s=%.4f\n", suffix,

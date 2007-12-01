@@ -43,6 +43,7 @@ typedef struct program_args {
     char format_output;
     char twox_compat;
     char strict_tags;
+    int  io_version; /* added by AU for version numbering*/
 } program_args;
 
 /* 

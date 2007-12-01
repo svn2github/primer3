@@ -56,6 +56,7 @@ main(argc,argv)
     char *argv[]; 
 { 
   program_args prog_args;
+  prog_args.io_version = 0; /* AU count is 0 for "old" bolder io */
   int         format_output = 0;
   primer_args *global_pa;
   seq_args *sa;
@@ -96,6 +97,30 @@ main(argc,argv)
     }  else if (!strcmp(*argv, "-2x_compat")) {
       printf( "PRIMER_ERROR=flag -2x_compat is no longer supported\n=\n");
       exit (-1);
+    }  else if (!strncmp(*argv, "io_version=", 10)) {
+      /* This reads in the version number required for io functions */
+      /* added by A.Untergasser */
+      int version=0;
+      char tag2int[20];
+      strncpy (tag2int,*argv,19);
+      int counter;
+      int read_int=0;
+      for (counter=0; counter<=19 ; counter++)
+      {
+    	  if (read_int != 0){
+    		  if (isdigit(tag2int[counter])){
+    			  version=10*version+(tag2int[counter] - '0');
+    		  }
+    		  else {
+    			  read_int=0;
+    			  counter=20;
+    		  }
+     	  }
+    	  if (tag2int[counter] == '=') {
+    		  read_int=1;
+    	  }
+      }
+      prog_args.io_version = version;
     } else if (!strcmp(*argv, "-strict_tags"))
       prog_args.strict_tags = 1;
     else  {
@@ -269,6 +294,7 @@ print_usage()
     fprintf(stderr, 
 	    "\n\nUSAGE: %s %s %s\n", pr_program_name,
 	    "[-format_output]",
+	    "[io_version=xxx]",
 	    "[-strict_tags]");
     fprintf(stderr, "This is primer3 (%s)\n", pr_release);
     fprintf(stderr, "Input must be provided on standard input.\n");
