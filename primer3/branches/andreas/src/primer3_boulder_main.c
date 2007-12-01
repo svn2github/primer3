@@ -97,8 +97,8 @@ main(argc,argv)
     }  else if (!strcmp(*argv, "-2x_compat")) {
       printf( "PRIMER_ERROR=flag -2x_compat is no longer supported\n=\n");
       exit (-1);
-    }  else if (!strncmp(*argv, "io_version=", 10)) {
-      /* This reads in the version number required for io functions */
+    }  else if (!strncmp(*argv, "-io_version=", 10)) {
+      /* This reads in the version number required for extended io functions */
       /* added by A.Untergasser */
       int version=0;
       char tag2int[20];
@@ -121,9 +121,9 @@ main(argc,argv)
     	  }
       }
       prog_args.io_version = version;
-    } else if (!strcmp(*argv, "-strict_tags"))
+    } else if (!strcmp(*argv, "-strict_tags")) {
       prog_args.strict_tags = 1;
-    else  {
+    } else  {
       print_usage();
       exit(-1);
     }
@@ -294,7 +294,7 @@ print_usage()
     fprintf(stderr, 
 	    "\n\nUSAGE: %s %s %s\n", pr_program_name,
 	    "[-format_output]",
-	    "[io_version=xxx]",
+	    "[-io_version=xxx]",
 	    "[-strict_tags]");
     fprintf(stderr, "This is primer3 (%s)\n", pr_release);
     fprintf(stderr, "Input must be provided on standard input.\n");
