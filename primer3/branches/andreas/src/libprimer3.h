@@ -74,12 +74,15 @@ if (!(COND)) {                                           \
     abort();                                             \
 }
 
-typedef enum task { pick_pcr_primers               = 0,
-		    pick_pcr_primers_and_hyb_probe = 1,
-		    pick_left_only                 = 2,
-                    pick_right_only                = 3,
-                    pick_hyb_probe_only            = 4,
-                } task;
+typedef enum task {
+	pick_pcr_primers               = 0,
+	pick_pcr_primers_and_hyb_probe = 1,
+	pick_left_only                 = 2,
+    pick_right_only                = 3,
+    pick_hyb_probe_only            = 4,
+    pick_detection_primers         = 5,
+    pick_sequencing_primers        = 6,
+    } task;
 
 /* pr_append_str is an append-only string ADT. */
 typedef struct pr_append_str {
