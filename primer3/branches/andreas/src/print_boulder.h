@@ -43,7 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 void   boulder_print_pairs(const program_args *, const primer_args *, 
 			   const seq_args *, const pair_array_t *);
 
-void   boulder_print_oligos(const primer_args *, 
+void   boulder_print_oligos(const program_args *, const primer_args *, 
 			    const seq_args *, int, oligo_type,
 			    primer_rec *  
 			    /* primer_rec *r,  

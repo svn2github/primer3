@@ -723,7 +723,6 @@ seq_args
   r->incl_l = -1; /* Indicates logical NULL. */
   r->n_quality = 0;
   r->quality = NULL;
-
   
   return r;
 }

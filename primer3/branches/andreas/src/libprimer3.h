@@ -74,6 +74,7 @@ if (!(COND)) {                                           \
     abort();                                             \
 }
 
+/* Enum to define tasks primer3 can do */
 typedef enum task {
 	pick_pcr_primers               = 0,
 	pick_pcr_primers_and_hyb_probe = 1,
@@ -86,8 +87,14 @@ typedef enum task {
     pick_sequencing_primers        = 8,
     pick_primer_list               = 9,
     check_primers                  = 10,
-    } task;
+} task;
 
+/* Enum explaining if output are pairs */
+typedef enum output_format {
+	primer_pairs    = 0,
+	primer_list     = 1,
+} output_format;
+    
 /* pr_append_str is an append-only string ADT. */
 typedef struct pr_append_str {
     int storage_size;
@@ -594,6 +601,9 @@ typedef struct p3retval {
 
   /* Array of best primer pairs */
   pair_array_t best_pairs;
+  
+  /* Enum of output format*/
+  output_format output;
 
   pr_append_str glob_err;
 

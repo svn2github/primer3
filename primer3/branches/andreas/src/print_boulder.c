@@ -252,6 +252,7 @@ boulder_print_error(const char *err) {
 
 void 
 boulder_print_oligos(
+		     const program_args *prog_args,
 		     const primer_args *pa,
 		     const seq_args *sa,
 		     int n,
@@ -294,7 +295,9 @@ boulder_print_oligos(
     else  oligo = mid;  */
 
     while(i < j) {
-	if (i == 0) suffix[0] = '\0';
+    	
+    /* AU fix for the 0 for scripting the output */
+	if ((i == 0) && (prog_args->io_version < 1) ) suffix[0] = '\0';
 	else sprintf(suffix, "_%d", i);
 
 	printf("%s%s_PENALTY=%.4f\n", type, suffix, oligo[i].quality);

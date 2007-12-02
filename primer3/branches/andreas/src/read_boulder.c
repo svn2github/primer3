@@ -474,12 +474,14 @@ read_record(const program_args *prog_args,
     } else {
     	if (task_tmp != NULL) {
 	      if (!strcmp_nocase(task_tmp, "pick_pcr_primers")) {
-			pa->primer_task = pick_detection_primers;
+			pa->primer_task = pick_pcr_primers;
+				/* should be pick_detection_primers;*/
 			pa->pick_left_primer = 1;
 			pa->pick_right_primer = 1;
 			pa->pick_internal_oligo = 0;
 	      } else if (!strcmp_nocase(task_tmp, "pick_pcr_primers_and_hyb_probe")) {
-			pa->primer_task = pick_detection_primers;
+			pa->primer_task = pick_pcr_primers_and_hyb_probe; 
+			    /*should be pick_detection_primers;*/
 			pa->pick_left_primer = 1;
 			pa->pick_right_primer = 1;
 			pa->pick_internal_oligo = 1;
