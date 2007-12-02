@@ -81,7 +81,11 @@ typedef enum task {
     pick_right_only                = 3,
     pick_hyb_probe_only            = 4,
     pick_detection_primers         = 5,
-    pick_sequencing_primers        = 6,
+    pick_cloning_primers           = 6,
+    pick_discriminative_primers    = 7,    
+    pick_sequencing_primers        = 8,
+    pick_primer_list               = 9,
+    check_primers                  = 10,
     } task;
 
 /* pr_append_str is an append-only string ADT. */

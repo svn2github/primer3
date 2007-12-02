@@ -443,6 +443,7 @@ read_record(const program_args *prog_args,
 
     /* AU: modified to be able to use task in the new way */
     if (0 == prog_args->io_version) {
+    	/*here primer_task for all should be: pick_detection_primers; */
 	    if (task_tmp != NULL) {
 	      pa->pick_left_primer = 0;
 	      pa->pick_right_primer = 0;
@@ -499,8 +500,16 @@ read_record(const program_args *prog_args,
 			pa->pick_internal_oligo = 1;
 	      } else if (!strcmp_nocase(task_tmp, "pick_detection_primers")) {
 			pa->primer_task = pick_detection_primers;
+	      } else if (!strcmp_nocase(task_tmp, "pick_cloning_primers")) {
+			pa->primer_task = pick_cloning_primers;
+	      } else if (!strcmp_nocase(task_tmp, "pick_discriminative_primers")) {
+			pa->primer_task = pick_discriminative_primers;
 	      } else if (!strcmp_nocase(task_tmp, "pick_sequencing_primers")) {
 			pa->primer_task = pick_sequencing_primers;
+	      } else if (!strcmp_nocase(task_tmp, "pick_primer_list")) {
+			pa->primer_task = pick_primer_list;
+	      } else if (!strcmp_nocase(task_tmp, "check_primers")) {
+			pa->primer_task = check_primers;
 	      } else 
 	    	pr_append_new_chunk(glob_err,
 				    "Unrecognized PRIMER_TASK");
