@@ -60,7 +60,8 @@ main(argc,argv)
   /* Setup the input data structures handlers */
   program_args prog_args;
   prog_args.io_version = 0; /* AU count is 0 for "old" bolder io */
-  int format_output = 0; /* FIX ME not necessary?? done in memset?? line 100? */
+  /* FIX ME: Is it necessary?? Isnt it done in memset?? line 100? */
+  int format_output = 0;
   primer_args *global_pa;
   seq_args *sa;
   /* Setup the error structures handlers */
@@ -103,7 +104,6 @@ main(argc,argv)
     argv++;
     if (!strcmp(*argv, "-format_output")) {
       prog_args.format_output = 1;
-      format_output = 1;
     }  else if (!strcmp(*argv, "-2x_compat")) {
       printf( "PRIMER_ERROR=flag -2x_compat is no longer supported\n=\n");
       exit (-1);
@@ -171,16 +171,15 @@ main(argc,argv)
     /* Read data from stdin until a "=" line occurs.  Assign parameter
      * values for primer picking to pa and sa. Perform initial data
      * checking. */
-    if (read_record(&prog_args, !format_output, global_pa, sa, 
+    if (read_record(&prog_args, !prog_args.format_output, global_pa, sa, 
 		    fatal_parse_err, nonfatal_parse_err) <= 0) {
-    	     /* FIX ME: Sould that not be prog_args.format_output ?? */
       break; /* leave the program loop and complain later */
     }
     input_found = 1;
 
     /* If there are fatal errors, write the proper message and exit */
     if (fatal_parse_err->data != NULL) {
-      if (format_output) { /* FIX ME: Sould that not be prog_args.format_output ?? */
+      if (prog_args.format_output) {
 	    format_error(stdout, sa->sequence_name, fatal_parse_err->data);
       } else {
 	    boulder_print_error(fatal_parse_err->data);
@@ -195,7 +194,7 @@ main(argc,argv)
     /* If there are nonfatal errors, write the proper message
      * and finish this loop */
     if (!pr_is_empty(nonfatal_parse_err)) {
-      if (format_output) { /* FIX ME: Sould that not be prog_args.format_output ?? */
+      if (prog_args.format_output) {
         format_error(stdout, sa->sequence_name, 
 		nonfatal_parse_err->data);
       } else {
@@ -221,7 +220,7 @@ main(argc,argv)
       pr_append_new_chunk(combined_retval_err, 
     		  retval->per_sequence_err.data);
       /* pr_append_new_chunk(combined_retval_err, sa->error.data); */
-      if (format_output) { /* FIX ME: Sould that not be prog_args.format_output ?? */
+      if (prog_args.format_output) {
 	    format_error(stdout, sa->sequence_name,
 		     combined_retval_err->data);
       } else {
@@ -239,7 +238,7 @@ main(argc,argv)
     /* Print results for primer pairs */
     if (global_pa->pick_left_primer && global_pa->pick_right_primer) {
       /* Use formated output */
-      if (format_output) { /* FIX ME: Sould that not be prog_args.format_output ?? */
+      if (prog_args.format_output) {
 	    format_pairs(stdout, global_pa, sa, 
 	    		&retval->best_pairs, pr_release);
       }
@@ -269,7 +268,7 @@ main(argc,argv)
 		abort();
       }
 
-      if (format_output) { /* FIX ME: Sould that not be prog_args.format_output ?? */
+      if (prog_args.format_output) {
     	format_oligos(stdout, global_pa, sa, oligo,
 		      num_oligo, oligot, pr_release);
       } else {

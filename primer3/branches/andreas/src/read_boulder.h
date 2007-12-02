@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "libprimer3.h"
 
 typedef struct program_args {
-    char format_output;
+    char format_output; /* FIX ME: Sould these be not int? Why is char?*/
     char twox_compat;
     char strict_tags;
     int  io_version; /* added by AU for version numbering*/
