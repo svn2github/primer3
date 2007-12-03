@@ -43,12 +43,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 void   boulder_print(const program_args *, const primer_args *, 
 			   const seq_args *, const p3retval *);
 
-void   boulder_print_oligos(const program_args *, const primer_args *, 
-			    const seq_args *, int, oligo_type,
-			    primer_rec *  
-			    /* primer_rec *r,  
-			       primer_rec *mid */);
-
 void   boulder_print_error(const char *err);
 
 #endif
