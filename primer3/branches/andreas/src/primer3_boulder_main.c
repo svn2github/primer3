@@ -61,7 +61,6 @@ main(argc,argv)
   program_args prog_args;
   prog_args.io_version = 0; /* AU count is 0 for "old" bolder io */
   /* FIX ME: Is it necessary?? Isnt it done in memset?? line 100? */
-  int format_output = 0;
   primer_args *global_pa;
   seq_args *sa;
   /* Setup the error structures handlers */
@@ -235,6 +234,14 @@ main(argc,argv)
     PR_ASSERT(pr_is_empty(&retval->per_sequence_err))
 
     /* Print out the results: */
+    /* FIX ME: this sets output, it should go into libprimer*/
+    if (global_pa->pick_left_primer && global_pa->pick_right_primer) {
+    	retval->output = primer_pairs;
+    } else {
+    	retval->output = primer_list;
+    }
+    
+    
     /* Print results for primer pairs */
     if (global_pa->pick_left_primer && global_pa->pick_right_primer) {
       /* Use formated output */
@@ -244,8 +251,7 @@ main(argc,argv)
       }
       /* Use boulder output */
       else {
-	    boulder_print_pairs(&prog_args, global_pa, sa,
-			    &retval->best_pairs);
+	    boulder_print(&prog_args, global_pa, sa, retval);
       }
     }
     /* Print out results as primer lists */
@@ -272,13 +278,15 @@ main(argc,argv)
     	format_oligos(stdout, global_pa, sa, oligo,
 		      num_oligo, oligot, pr_release);
       } else {
-    	boulder_print_oligos(&prog_args, global_pa, sa,
-    			num_oligo, oligot, oligo);
+    	 /*boulder_print_oligos(&prog_args, global_pa, sa,
+    			num_oligo, oligot, oligo);*/
+    	 boulder_print(&prog_args, global_pa, sa, retval);
+    	  
       }
     }
 
 
-  finish_loop: /* Here the infalid loops join in again */
+  finish_loop: /* Here the falid loops join in again */
     if (NULL != retval) {
       /* Check for errors and print them */
       if (NULL != retval->glob_err.data) {
@@ -317,11 +325,8 @@ print_usage()
 {
     const char **p = libprimer3_copyright();
     while (NULL != *p) fprintf(stderr, "%s\n", *p++);
-    fprintf(stderr, 
-	    "\n\nUSAGE: %s %s %s\n", pr_program_name,
-	    "[-format_output]",
-	    "[-io_version=xxx]",
-	    "[-strict_tags]");
+    fprintf(stderr, "\n\nUSAGE: %s %s %s %s\n", pr_program_name,
+	    "[-format_output]", "[-io_version=xxx]", "[-strict_tags]");
     fprintf(stderr, "This is primer3 (%s)\n", pr_release);
     fprintf(stderr, "Input must be provided on standard input.\n");
     fprintf(stderr, "For example:\n");
