@@ -197,6 +197,7 @@ format_pairs(FILE *f,
 
 }
 
+/* Prints out the results of a primer pair */
 static void
 print_summary(f, pa, sa, best_pairs, num)
     FILE *f;
@@ -248,6 +249,7 @@ print_oligo_header(f, s, print_lib_sim)
 	    s, print_lib_sim ? "  rep " : "");
 }
 
+/* Print the line with the parameters */
 static void
 print_oligo(FILE *f,
 	    const char *title,
@@ -308,6 +310,7 @@ print_pair_array(f, title, num, array, pa, sa)
 #define EXCL_REGION      (1<<5)
 #define INTL_EXCL_REGION (1<<6)
 
+/* Prints out the asci picture of the sequence */
 /* Return 1 on ENOMEM. Otherwise return 0. */
 static int
 print_seq(f, pa, sa, h, best_pairs, num)
@@ -525,6 +528,7 @@ print_rest(f, pa, sa, best_pairs)
     }
 }
 
+/* Print out the statistics of primer picking */
 /* This function does _not_ print out the no_orf statistic. */
 static void
 print_explain(FILE *f,
@@ -716,6 +720,7 @@ format_error(FILE *f, const char* seq_name, const char *err)
     fprintf(f, "INPUT PROBLEM: %s\n\n", err);
 }
 
+/* Format and print out one oligo */
 void 
 format_oligos(FILE *f,
 	      const primer_args *pa,
