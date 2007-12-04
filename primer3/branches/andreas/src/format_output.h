@@ -39,20 +39,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PR_FORMAT_OUTPUT_H 1
 
 #include "libprimer3.h"
+#include "read_boulder.h"
 /* 
  * Format the pair in p (plus the middle oligo if appropriate)
  * on f.  If p->product_size = 0 then primer choice failed.
  * Both functions may exit on error, using the conventions
  * in primer3_boulder_main.c
  */
-void format_pairs(FILE *f, const primer_args *pa,
-		  const seq_args *sa, 
-		  const pair_array_t *,
-		  const char *);
 
-void format_oligos(FILE *, const primer_args *, const seq_args *, 
-		   primer_rec *, int, oligo_type,
-		   const char*);
+void format_output(FILE *f, const program_args *prog_args, const primer_args *pa,
+		  const seq_args *sa, const p3retval *, const char *);
 
 void format_error(FILE *f, const char* seq_name, const char *err);
 

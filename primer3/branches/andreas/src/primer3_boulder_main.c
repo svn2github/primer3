@@ -70,12 +70,6 @@ main(argc,argv)
   /* Setup the output data structure handlers */
   p3retval *retval = NULL;
   
-  /* FIX ME: I think that should be done different */
-  /* Structures to have only one primer list as result */
-  oligo_type oligot = OT_LEFT; /* Silence warning */
-  int num_oligo = 0;
-  primer_rec *oligo = NULL;
- 
   int input_found=0;
 
   /* Get the program name for correct error messages */
@@ -108,6 +102,7 @@ main(argc,argv)
       exit (-1);
     }  else if (!strncmp(*argv, "-io_version=", 10)) {
       /* This reads in the version number required for extended io functions */
+      /*  FIX ME: Do this different and better */
       int version=0;
       char tag2int[20];
       strncpy (tag2int,*argv,19);
@@ -241,52 +236,17 @@ main(argc,argv)
     	retval->output = primer_list;
     }
     
-    
     /* Print results for primer pairs */
-    if (global_pa->pick_left_primer && global_pa->pick_right_primer) {
-      /* Use formated output */
-      if (prog_args.format_output) {
-	    format_pairs(stdout, global_pa, sa, 
-	    		&retval->best_pairs, pr_release);
+    /* Use formated output */
+    if (prog_args.format_output) {
+    	format_output(stdout, &prog_args, global_pa, sa, retval, pr_release);
       }
-      /* Use boulder output */
-      else {
-	    boulder_print(&prog_args, global_pa, sa, retval);
-      }
-    }
-    /* Print out results as primer lists */
+    /* Use boulder output */
     else {
-      /* FIX ME: not so nice, probably better to change format oligos */
-      if (global_pa->pick_left_primer) {
-		oligot = OT_LEFT;
-		oligo = retval->f;
-		num_oligo = retval->n_f;
-      } else if (global_pa->pick_right_primer) {
-		oligot = OT_RIGHT;
-		oligo = retval->r;
-		num_oligo = retval->n_r;
-      } else if (global_pa->pick_internal_oligo) {
-		oligot = OT_INTL;
-		oligo = retval->mid;
-		num_oligo = retval->n_m;
-      } else {
-		fprintf(stderr, "%s: fatal programming error\n", pr_program_name);
-		abort();
-      }
-
-      if (prog_args.format_output) {
-    	format_oligos(stdout, global_pa, sa, oligo,
-		      num_oligo, oligot, pr_release);
-      } else {
-    	 /*boulder_print_oligos(&prog_args, global_pa, sa,
-    			num_oligo, oligot, oligo);*/
-    	 boulder_print(&prog_args, global_pa, sa, retval);
-    	  
-      }
+	    boulder_print(&prog_args, global_pa, sa, retval);
     }
-
-
-  finish_loop: /* Here the falid loops join in again */
+ 
+    finish_loop: /* Here the falid loops join in again */
     if (NULL != retval) {
       /* Check for errors and print them */
       if (NULL != retval->glob_err.data) {
