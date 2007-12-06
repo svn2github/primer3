@@ -89,7 +89,7 @@ format_output(FILE *f,
   primer_rec *oligo = NULL;
   
   /* Print as primer pairs */
-  if (retval->output == primer_pairs) {
+  if (retval->output_type == primer_pairs) {
     format_pairs(f, pa, sa, &retval->best_pairs, pr_release);
     
   /* Print as primer list */

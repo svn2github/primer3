@@ -100,7 +100,7 @@ boulder_print(prog_args, pa, sa, retval)
       printf("PRIMER_STOP_CODON_POSITION=%d\n", sa->stop_codon_pos);
     
     /* How often has the loop to be done? */
-    if (retval->output == primer_list) {
+    if (retval->output_type == primer_list) {
 	    /* For Primer Lists: Figure out how many primers are in
 	     * the array that can be printed. If more than needed,
 	     * set it to the number requested. */
@@ -138,7 +138,7 @@ boulder_print(prog_args, pa, sa, retval)
     for(i=0; i<loop_max; i++) {
       /* What needs to be printed */
       /* The conditions for primer lists */
-      if (retval->output == primer_list) {
+      if (retval->output_type == primer_list) {
          /* Attach the selected primers to the pointers */
   		fwd = &retval->f[i];
   		rev = &retval->r[i];
@@ -172,7 +172,7 @@ boulder_print(prog_args, pa, sa, retval)
 	    go_fwd = 1;
 	    go_rev = 1;
 	    /* Do hyb oligos have to be printed? */
-	    /* FIX ME: Should be (pa->pick_internal_oligo) && (retval->output == primer_pairs) */
+	    /* FIX ME: Should be (pa->pick_internal_oligo) && (retval->output_type == primer_pairs) */
 	    /* Strangely this does not work */
 	    if (pa->primer_task == pick_pcr_primers_and_hyb_probe) {
 	    	go_int = 1;
@@ -189,7 +189,7 @@ boulder_print(prog_args, pa, sa, retval)
 	}
 
 	/* Print out the Pair Penalties */
-	if (retval->output == primer_pairs) {
+	if (retval->output_type == primer_pairs) {
 	  if (prog_args->io_version < 1) {
 	  	printf("PRIMER_PAIR_PENALTY%s=%.4f\n", suffix,
 				retval->best_pairs.pairs[i].pair_quality);
@@ -280,7 +280,7 @@ boulder_print(prog_args, pa, sa, retval)
         printf("PRIMER_RIGHT%s_MISPRIMING_SCORE=%.2f, %s\n", suffix,
 	      rev->repeat_sim.score[rev->repeat_sim.max] / PR_ALIGN_SCORE_PRECISION,
                rev->repeat_sim.name);
-      if (retval->output == primer_pairs)
+      if (retval->output_type == primer_pairs)
         printf("PRIMER_PAIR%s_MISPRIMING_SCORE=%.2f, %s\n", suffix,
           retval->best_pairs.pairs[i].repeat_sim / PR_ALIGN_SCORE_PRECISION,
                retval->best_pairs.pairs[i].rep_name);
@@ -300,7 +300,7 @@ boulder_print(prog_args, pa, sa, retval)
 	  if (go_rev == 1) 
         printf("PRIMER_RIGHT%s_MIN_SEQ_QUALITY=%d\n", suffix,
 		   rev->seq_quality);
-	  if (go_int == 1 && (retval->output == primer_list)) 
+	  if (go_int == 1 && (retval->output_type == primer_list)) 
 	  	printf("PRIMER_INTERNAL_OLIGO%s_MIN_SEQ_QUALITY=%d\n", suffix,
 	  	   intl->seq_quality);
 	      /* Has to be here and in primer pairs for backward compatibility */
@@ -334,7 +334,7 @@ boulder_print(prog_args, pa, sa, retval)
 		 oligo_max_template_mispriming(rev) / PR_ALIGN_SCORE_PRECISION);
 
     /* Print the pair parameters*/
-	if (retval->output == primer_pairs) {
+	if (retval->output_type == primer_pairs) {
   	  if (go_int == 1 && NULL != sa->quality) /* FIX ME - Uptate the tests */
 	    printf("PRIMER_INTERNAL_OLIGO%s_MIN_SEQ_QUALITY=%d\n",
 		   suffix, intl->seq_quality);

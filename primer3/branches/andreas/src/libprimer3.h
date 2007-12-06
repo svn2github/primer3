@@ -75,26 +75,27 @@ if (!(COND)) {                                           \
 }
 
 /* Enum to define tasks primer3 can do */
-typedef enum task {
-	pick_pcr_primers               = 0,
-	pick_pcr_primers_and_hyb_probe = 1,
-	pick_left_only                 = 2,
-    pick_right_only                = 3,
-    pick_hyb_probe_only            = 4,
-    pick_detection_primers         = 5,
-    pick_cloning_primers           = 6,
-    pick_discriminative_primers    = 7,    
-    pick_sequencing_primers        = 8,
-    pick_primer_list               = 9,
-    check_primers                  = 10,
+typedef enum task { 
+  pick_pcr_primers               = 0,
+  pick_pcr_primers_and_hyb_probe = 1,
+  pick_left_only                 = 2,
+  pick_right_only                = 3,
+  pick_hyb_probe_only            = 4,
+  pick_detection_primers         = 5,
+  pick_cloning_primers           = 6,
+  pick_discriminative_primers    = 7,    
+  pick_sequencing_primers        = 8,
+  pick_primer_list               = 9,
+  check_primers                  = 10,
 } task;
 
 /* Enum explaining if output are pairs */
-typedef enum output_format {
+typedef enum p3_output_type {
 	primer_pairs    = 0,
 	primer_list     = 1,
-} output_format;
-    
+} p3_output_type;
+
+
 /* pr_append_str is an append-only string ADT. */
 typedef struct pr_append_str {
     int storage_size;
@@ -116,13 +117,6 @@ typedef struct seq_lib {
     pr_append_str warning;/* Warning message. */
     int seq_num;          /* The number of names, sequences, and weights. */
 } seq_lib;
-
-/* Maxima needed for interface data structures. */
-#define PR_MAX_INTERVAL_ARRAY 200 /* 
-				   * Maximum number of input intervals
-				   * supported; used for targets, excluded
-				   * regions, product-size intervals, etc.
-				   */
 
 /* 
  * Arguments to the primer program as a whole.  Values for these arguments are
@@ -199,6 +193,14 @@ typedef struct args_for_one_oligo_or_primer {
   short  max_template_mispriming;
 } args_for_one_oligo_or_primer;
 
+
+/* Maxima needed for interface data structures. */
+#define PR_MAX_INTERVAL_ARRAY 200 
+/* 
+ * Maximum number of input intervals
+ * supported; used for targets, excluded
+ * regions, product-size intervals, etc.
+ */
 
 typedef struct p3_global_settings {
   /* ================================================== */
@@ -297,7 +299,7 @@ typedef struct p3_global_settings {
 
   /* ================================================== */
   /* Arguments for primer pairs and products. */
-
+  /* FIX ME, repplace this interval_array_t2 structs? */
   int    pr_min[PR_MAX_INTERVAL_ARRAY]; /* Minimum product sizes. */
   int    pr_max[PR_MAX_INTERVAL_ARRAY]; /* Maximum product sizes. */
   int    num_intervals;         /* 
@@ -479,6 +481,11 @@ typedef struct pair_array_t {
 
 typedef int interval_array_t[PR_MAX_INTERVAL_ARRAY][2];
 
+typedef struct interval_array_t2 {
+  int pairs[PR_MAX_INTERVAL_ARRAY][2];
+  int count;
+} interval_array_t2;
+
 typedef struct oligo_stats {
   int considered;          /* Total number of tested oligos of given type   */
   int ns;                  /* Number of oligos rejected because of Ns       */
@@ -521,7 +528,9 @@ typedef struct pair_stats {
  * we will pick primer(s), etc.
  */
 typedef struct seq_args {
-  int num_targets;        /* The number of targets. */
+
+  interval_array_t2 tar2;   /* Replacement for tar,  below, FIX ME finish */
+  int num_targets;      /* The number of targets. */
   interval_array_t tar;   /*
 			   * The targets themselves; tar[i][0] is the start
 			   * of the ith target, tar[i][1] its length.  These
@@ -530,6 +539,8 @@ typedef struct seq_args {
 			   * are recalculated to be indexes within
 			   * trimmed_seq.
 			   */
+
+  interval_array_t2 excl2;  /* replacement for excl, below, FIX ME finish */
   int num_excl;           /* The number of excluded regions.  */
   interval_array_t excl;  /* The same as for targets.
 			   * These are presented as indexes within
@@ -537,9 +548,12 @@ typedef struct seq_args {
 			   * execution of choice() they are recalculated
 			   * to be indexes within trimmed_seq.
 			   */
+  interval_array_t2 excl_internal2;
+
   int num_internal_excl;  /* Number of excluded regions for internal oligo.*/
   interval_array_t excl_internal;
   /* Similar to excl. */
+
   int incl_s;             /* The 0-based start of included region. */
   int incl_l;             /* 
 			   * The length of the included region, which is
@@ -601,38 +615,108 @@ typedef struct p3retval {
 
   /* Array of best primer pairs */
   pair_array_t best_pairs;
-  
-  /* Enum of output format*/
-  output_format output;
 
   pr_append_str glob_err;
 
   pr_append_str per_sequence_err;
+
+  pr_append_str warnings;
+
+  p3_output_type output_type;
 
 } p3retval;
 
 /* Deallocate a primer3 state */
 void destroy_p3retval(p3retval *);
 
+/* get elements of p3retval */
+/* NOTE, we still need to provide accessors for the
+   oligo lists! */
+/* NOTE, we will likely need accessors for the 
+   pair_array_t */
+const pair_array_t *p3_get_retval_best_pairs(const p3retval *r);
+const char *p3_get_retval_glob_err(const p3retval *r);
+const char *p3_get_retval_per_sequence_err(const p3retval *r);
+const char *p3_get_retval_warnings(const p3retval *r);
+p3_output_type p3_get_retval_output_type(const p3retval *r);
+
+
 /* Functions for seq_args -- create, destroy, set slots */
 seq_args *create_seq_arg();
 void destroy_seq_args(seq_args *);
-int p3_set_seq_args_sequence(seq_args *sargs, const char *new_seq);
-int p3_set_seq_args_sequence_name(seq_args *sargs, const char *new_seq);
-int p3_set_seq_args_left_input(seq_args *sargs, const char *new_seq);
-int p3_set_seq_args_right_input(seq_args *sargs, const char *new_seq);
-int p3_set_seq_args_internal_input(seq_args *sargs, const char *new_seq);
-int p3_set_seq_args_start_codon_pos(seq_args *sargs, int codon_start_pos);
-/* FIX ME, we need to deal with interval lists */
+int p3_adjust_seq_args(const p3_global_settings *pa, 
+		       seq_args *sa, 
+		       pr_append_str *nonfatal_err);
+
+int p3_add_to_interval_array(interval_array_t2 *interval_arr, int i1, int i2);
+
+/*
+  use p3_add_to_interval_array(interval_array_t2 *interval_arr, int i1, int i2);
+
+  to do the sets for tar2, excl2, nd excl_internal2
+*/
+
+interval_array_t2 *p3_get_seq_args_tar2(seq_args *sargs);
+interval_array_t2 *p3_get_seq_args_excl2(seq_args *sargs);
+interval_array_t2 *p3_get_seq_args_excl_internal2(seq_args *sargs);
+
+void p3_set_seq_args_incl_s(seq_args *sargs, int incl_s);
+void p3_set_seq_args_incl_l(seq_args *sargs, int incl_l);
+void p3_set_seq_args_start_codon_pos(seq_args *sargs, int start_codon_pos);
+void p3_set_seq_args_stop_codon_pos(seq_args *sargs, int stop_codon_pos);
+void p3_set_seq_args_n_quality(seq_args *sargs, int n_quality);
+int p3_set_seq_args_sequence(seq_args *sargs, const char *sequence);
+int p3_set_seq_args_sequence_name(seq_args *sargs, const char* sequence_name);
+int p3_set_seq_args_sequence_file(seq_args *sargs, const char *sequence_file);
+int p3_set_seq_args_trimmed_sequence(seq_args *sargs, const char *trimmed_sequence);
+int p3_set_seq_args_trimmed_original_sequence(seq_args *sargs, const char *trimmed_original_sequence);
+int p3_set_seq_args_upcased_sequence(seq_args *sargs, const char *upcased_sequencd);
+int p3_set_seq_args_left_input(seq_args *sargs, const char *left_input);
+int p3_set_seq_args_right_input(seq_args *sargs, const char *right_input);
+int p3_set_seq_args_internal_input(seq_args *sargs, const char *internal_input);
+
 
 /* Functions for p3_global_settings -- create, destroy, set slots */
 p3_global_settings *p3_create_global_settings();
 void p3_destroy_global_settings(p3_global_settings *);
 
-args_for_one_oligo_or_primer *p3_get_global_setting_p_args(p3_global_settings *);
-args_for_one_oligo_or_primer *p3_get_global_setting_o_args(p3_global_settings *);
+void p3_set_global_settings_primer_task(p3_global_settings * p , int primer_task);
+void p3_set_global_settings_pick_left_primer(p3_global_settings * p , int pick_left_primer);
+void p3_set_global_settings_pick_right_primer(p3_global_settings * p , int pick_right_primer);
+void p3_set_global_settings_pick_internal_oligo(p3_global_settings * p , int pick_internal_oligo);
+void p3_set_global_settings_explain_flag(p3_global_settings * p , int explain_flag);
+void p3_set_global_settings_first_base_index(p3_global_settings * p , int first_base_index);
+void p3_set_global_settings_liberal_base(p3_global_settings * p , int liberal_base);
+void p3_set_global_settings_num_return(p3_global_settings * p , int num_return);
+void p3_set_global_settings_pick_anyway(p3_global_settings * p , int pick_anyway);
+void p3_set_global_settings_lib_ambiguity_codes_consensus(p3_global_settings * p , int lib_ambiguity_codes_consensus);
+void p3_set_global_settings_quality_range_min(p3_global_settings * p , int quality_range_min);
+void p3_set_global_settings_quality_range_max(p3_global_settings * p , int quality_range_max);
+
+args_for_one_oligo_or_primer *p3_get_global_settings_p_args(p3_global_settings * p);
+args_for_one_oligo_or_primer *p3_get_global_settings_o_args(p3_global_settings * p);
 int p3_set_afogop_seq_lib(args_for_one_oligo_or_primer *, seq_lib *);
 int p3_set_afogop_opt_tm(args_for_one_oligo_or_primer *, double);
+
+void p3_set_global_settings_tm_santalucia(p3_global_settings * p , int tm_santalucia);
+void p3_set_global_settings_salt_corrections(p3_global_settings * p , int salt_corrections);
+void p3_set_global_settings_max_end_stability(p3_global_settings * p , int max_end_stability);
+void p3_set_global_settings_gc_clamp(p3_global_settings * p , int gc_clamp);
+void p3_set_global_settings_lowercase_masking(p3_global_settings * p , int lowercase_masking);
+void p3_set_global_settings_outside_penalty(p3_global_settings * p , double outside_penalty);
+void p3_set_global_settings_inside_penalty(p3_global_settings * p , double inside_penalty);
+void p3_get_global_settings_prmin (p3_global_settings * p , int *prmin);
+void p3_get_global_settings_prmax (p3_global_settings * p , int *prmax);
+void p3_set_global_settings_num_intervals(p3_global_settings * p , int num_intervals);
+void p3_set_global_settings_product_opt_size(p3_global_settings * p , int product_opt_size);
+void p3_set_global_settings_product_min_tm(p3_global_settings * p , double product_min_tm);
+void p3_set_global_settings_product_max_tm(p3_global_settings * p , double product_max_tm);
+void p3_set_global_settings_product_opt_tm(p3_global_settings * p , double product_opt_tm);
+void p3_set_global_settings_pair_max_template_mispriming(p3_global_settings * p , short  pair_max_template_mispriming);
+void p3_set_global_settings_pair_repeat_compl(p3_global_settings * p, short  pair_repeat_compl); 
+void p3_set_global_settings_pair_compl_any(p3_global_settings * p , short  pair_compl_any);
+void p3_set_global_settings_pair_compl_end(p3_global_settings * p , short  pair_compl_end);
+void p3_set_global_settings_max_diff_tm(p3_global_settings * p , double max_diff_tm);
 
 
 /* 
@@ -641,7 +725,15 @@ int p3_set_afogop_opt_tm(args_for_one_oligo_or_primer *, double);
  * Otherwise return retval (updated).  Errors are returned in 
  * in retval.
  */
-p3retval *choose_primers(/* p3retval *retval,*/  p3_global_settings *pa, seq_args *sa);
+
+p3retval *choose_primers(const p3_global_settings *pa, seq_args *sa);
+
+/* Andreas, this is the idea, argument list will need
+   to be cleaned up */
+int    p3_print_one_oligo_list(const seq_args *, 
+				      int, const primer_rec[],
+				      const oligo_type, const int, 
+				      const int, FILE *);
 
 char  *pr_oligo_sequence(const seq_args *, const primer_rec *);
 
@@ -661,9 +753,11 @@ void          pr_append(pr_append_str *, const char *);
 void          pr_append_new_chunk(pr_append_str *, const char *);
 
 
-void  pr_print_pair_explain(FILE *, const /* seq_args */ pair_stats *);
+void  pr_print_pair_explain(FILE *, const pair_stats *);
 
 const char  *libprimer3_release(void);
+
+/* FIX ME, make this a print function? or a char * */
 const char  **libprimer3_copyright(void);
 
 /* An accessor function for a primer_rec *. */

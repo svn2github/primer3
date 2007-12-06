@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <math.h>
 #include <signal.h>
-#include <unistd.h>
+  /*( #include <unistd.h> */
 #include <float.h>
 #include <string.h>
 #include <ctype.h> /* toupper */
@@ -96,11 +96,14 @@ typedef struct dpal_arg_holder {
 static jmp_buf _jmp_buf;
 
 /* Function declarations. */
-static int    _pr_data_control(const primer_args *,  seq_args *, 
+static int    _pr_data_control(const p3_global_settings *,  
+			       seq_args *, 
 			       pr_append_str *glob_err,
-			       pr_append_str *nonfatal_err);
-static int    _pr_need_pair_template_mispriming(const primer_args *pa);
-static int    _pr_need_template_mispriming(const primer_args *);
+			       pr_append_str *nonfatal_err,
+			       pr_append_str *warning);
+
+static int    _pr_need_pair_template_mispriming(const p3_global_settings *pa);
+static int    _pr_need_template_mispriming(const p3_global_settings *);
 
 static void   _pr_reverse_complement(const char *, char *);
 
@@ -111,67 +114,73 @@ static void   add_must_use_warnings(seq_args *, const char *,
 				    const oligo_stats *);
 static void   add_pair(const primer_pair *, pair_array_t *);
 static short  align(const char *, const char*, const dpal_args *a);
-static int    _pr_check_intervals(const char *, const int,
-				  interval_array_t, const int, 
-				  pr_append_str *err, seq_args *);
+
+static int    _pr_check_and_adjust_intervals(seq_args *sa, 
+					     int seq_len, 
+					     pr_append_str * nonfatal_err, 
+					     pr_append_str *warning);
+
+
+static int    _pr_check_and_adjust_1_interval(const char *, const int,
+					      interval_array_t, const int, 
+					      pr_append_str *err, seq_args *,
+					      pr_append_str *warning);
 
 static int    choose_pair_or_triple(p3retval *,
-				    const primer_args *,
+				    const p3_global_settings *,
 				    seq_args *, const dpal_arg_holder *,
 				    int,
 				    pair_array_t *);
 
-static void   check_sequence_quality(const primer_args *, primer_rec *,
+static void   check_sequence_quality(const p3_global_settings *, primer_rec *,
 				     oligo_type, const seq_args *, int, int,
 				     int *, int *);
 
 static int    choose_internal_oligo(p3retval *,
 				    const primer_rec *, const primer_rec *,
 				    int *, seq_args *,
-				    const primer_args *,
+				    const p3_global_settings *,
 				    const dpal_arg_holder *);
 
-void          compute_position_penalty(const primer_args *, const seq_args *, 
+void          compute_position_penalty(const p3_global_settings *, const seq_args *, 
 				       primer_rec *, oligo_type);
 
 static p3retval *create_p3retval(void);
-
-static int    p3_print_one_oligo_list(const seq_args *, 
-				      int, const primer_rec[],
-				      const oligo_type, const int, 
-				      const int, FILE *);
 
 static char   dna_to_upper(char *, int);
 static int    find_stop_codon(const char *, int, int);
 static void   gc_and_n_content(const int, const int, const char *, primer_rec *);
 
 static int    make_primer_lists(p3retval *,
-				const primer_args *,
+				const p3_global_settings *,
 				seq_args *,
 				const dpal_arg_holder *);
 
 static int    make_internal_oligo_list(p3retval *,
-				       const primer_args *,
+				       const p3_global_settings *,
 				       seq_args *,
 				       const dpal_arg_holder *);
 
-static double obj_fn(const primer_args *, primer_pair *);
+static double obj_fn(const p3_global_settings *, primer_pair *);
 
 static int    oligo_overlaps_interval(const int, const int,
 				      interval_array_t, const int);
 static int    oligo_pair_seen(const primer_pair *, const pair_array_t *);
 
-static void   oligo_param(const primer_args *pa,
+static void   oligo_param(const p3_global_settings *pa,
 			  primer_rec *, oligo_type,
 			  const dpal_arg_holder*,
 			  seq_args *, oligo_stats *);
 
 static int    characterize_pair(p3retval *p,
-				const primer_args *,
+				const p3_global_settings *,
 				seq_args *,
 				int, int, int,
 				primer_pair *,
 				const dpal_arg_holder*);
+
+static void   destroy_pr_append_str_data(const pr_append_str *str);
+static void   init_pr_append_str(pr_append_str *s);
 
 static int    pair_spans_target(const primer_pair *, const seq_args *);
 static void   pr_append_w_sep(pr_append_str *, const char *, const char *);
@@ -182,18 +191,17 @@ static int    primer_pair_comp(const void *, const void*);
 static int    primer_rec_comp(const void *, const void *);
 static int    p3_print_oligo_lists(const p3retval*, 
 				   const seq_args *, 
-				   const primer_args *, 
+				   const p3_global_settings *, 
 				   pr_append_str *err);
 static int    print_list_header(FILE *, oligo_type, int, int);
 static int    print_oligo(FILE *, const seq_args *, int, const primer_rec *,
 			  oligo_type, int, int);
 static char   *strstr_nocase(char *, char *);
 
-static double p_obj_fn(const primer_args *, primer_rec *, int );
+static double p_obj_fn(const p3_global_settings *, primer_rec *, int );
 
 static void   oligo_compl(primer_rec *, 
 			  const args_for_one_oligo_or_primer *po_args,
-			  /* const primer_args *,  */
 			  seq_args *sa,
 			  oligo_type, 
 			  const dpal_arg_holder *,
@@ -202,13 +210,13 @@ static void   oligo_compl(primer_rec *,
 			  );
 
 static void   oligo_mispriming(primer_rec *,
-			       const primer_args *,
+			       const p3_global_settings *,
 			       seq_args *,
 			       oligo_type, 
 			       const dpal_args *,
 			       const dpal_arg_holder *);
 
-static int    pair_repeat_sim(primer_pair *, const primer_args *);
+static int    pair_repeat_sim(primer_pair *, const p3_global_settings *);
 
 static void   free_repeat_sim_score(p3retval *);
 
@@ -387,7 +395,6 @@ The default is 0 only for backward compatibility.
 #define INTERNAL_OLIGO_REPEAT_SIMILARITY 1200
 #define REPEAT_SIMILARITY                1200
 #define PAIR_REPEAT_SIMILARITY           2400
-#define FIRST_BASE_INDEX                    0
 #define NUM_RETURN                          5
 #define MIN_QUALITY                         0
 #define QUALITY_RANGE_MIN                   0
@@ -520,14 +527,13 @@ pr_set_default_global_args(p3_global_settings *a) {
     a->liberal_base      = LIBERAL_BASE;
 
     /* Temporary, combination of old and new spec. */
-    /* should be primer_task = pick_detection_primers */
     a->primer_task         = pick_pcr_primers;
     a->pick_left_primer    = 1;
     a->pick_right_primer   = 1;
     a->pick_internal_oligo = 0;
     /* End temporary */
 
-    a->first_base_index  = FIRST_BASE_INDEX;
+    a->first_base_index  = 0;
     a->num_return        = NUM_RETURN;
     a->pr_min[0]         = 100;
     a->pr_max[0]         = 300;
@@ -615,12 +621,24 @@ pr_set_default_global_args(p3_global_settings *a) {
     a->lib_ambiguity_codes_consensus   = LIB_AMBIGUITY_CODES_CONSENSUS;
 }
 
+int
+p3_add_to_interval_array(interval_array_t2 *interval_arr, int i1, int i2) 
+{
+  int c = interval_arr->count;
+  if (c >= PR_MAX_INTERVAL_ARRAY) return 1;
+  interval_arr->pairs[c][0] = i1;
+  interval_arr->pairs[c][1] = i2;
+  interval_arr->count++;
+  return  0;
+}
+
 /* ================================================================== */
 /* The main primer3 interface */
 
 /* Allocate a new primer3 state. Return NULL if out of memory. Assuming
    malloc sets errno to ENOMEM according to Unix98, set errno to ENOMEM
    on out-of-memory error. */
+
 p3retval *
 create_p3retval(void)
 {
@@ -643,11 +661,18 @@ create_p3retval(void)
   state->best_pairs.pairs = NULL;
   state->best_pairs.num_pairs = 0;
 
-  state->glob_err.data = NULL;
+  init_pr_append_str(&state->glob_err);
+  init_pr_append_str(&state->per_sequence_err);
+  init_pr_append_str(&state->warnings);
+
+  /* state->glob_err.data = NULL; 
   state->glob_err.storage_size = 0;
 
   state->per_sequence_err.data = NULL;
   state->per_sequence_err.storage_size = 0;
+
+  state->warnings.data = NULL;
+  state->warnings.storage_size = 0; */
 
   return state;
 }
@@ -670,7 +695,14 @@ destroy_p3retval(p3retval *state)
     if (state->best_pairs.storage_size != 0 && state->best_pairs.pairs)
 	free(state->best_pairs.pairs);
 
-    if (NULL !=  state->glob_err.data) free(state->glob_err.data);
+
+    destroy_pr_append_str_data(&state->glob_err);
+    destroy_pr_append_str_data(&state->per_sequence_err);
+    destroy_pr_append_str_data(&state->warnings);
+
+    /* if (NULL != state->glob_err.data) free(state->glob_err.data);
+    if (NULL != state->per_sequence_err.data) free(state->per_sequence_err.data); 
+    if (NULL != state->warnings.data) free(state->warnings.data);  */
 
     free(state);
 }
@@ -723,6 +755,7 @@ seq_args
   r->incl_l = -1; /* Indicates logical NULL. */
   r->n_quality = 0;
   r->quality = NULL;
+
   
   return r;
 }
@@ -752,7 +785,7 @@ static dpal_arg_holder *dpal_arg_to_use = NULL;
 
 /* See libprimer3.h for documentation. */
 p3retval *
-choose_primers(primer_args *pa,
+choose_primers(const p3_global_settings *pa,
 	       seq_args *sa)
 {
     int          i;               /* Loop index. */
@@ -761,6 +794,11 @@ choose_primers(primer_args *pa,
     pair_array_t *best_pairs;
 
     p3retval *retval = create_p3retval();
+    if (pa->pick_left_primer && pa->pick_right_primer) {
+      retval->output_type = primer_pairs;
+    } else {
+      retval->output_type = primer_list;
+    }
 
     if (retval == NULL)  return NULL;
     best_pairs = &retval->best_pairs;
@@ -783,12 +821,14 @@ choose_primers(primer_args *pa,
     PR_ASSERT(NULL != pa);
     PR_ASSERT(NULL != sa);
     
-    /* FIX ME -- MOVE THIS TO OUTSIDE libprimer3 or make this a warning */
-    if (pa->p_args.min_quality != 0 
+    /* FIX ME -- make this a warning? */
+    /* if (pa->p_args.min_quality != 0 
 	&& pa->p_args.min_end_quality < pa->p_args.min_quality)
-      pa->p_args.min_end_quality = pa->p_args.min_quality;
+	pa->p_args.min_end_quality = pa->p_args.min_quality; */
 
-    if (_pr_data_control(pa, sa, &retval->glob_err, &sa->error) !=0 ) {
+    if (_pr_data_control(pa, sa, &retval->glob_err, 
+			 &sa->error, 
+			 &sa->warning) !=0 ) {
       return retval;
     }
 
@@ -817,13 +857,13 @@ choose_primers(primer_args *pa,
 
     /* We sort _after_ printing lists to 
        maintain the order of test output. */
-    if (pa->primer_task != pick_left_only 
-	&& pa->primer_task != pick_hyb_probe_only) 
+    if ( pa->pick_right_primer /* pa->primer_task != pick_left_only 
+				  && pa->primer_task != pick_hyb_probe_only */) 
       qsort(&retval->r[0], retval->n_r, sizeof(*retval->r),
 	    primer_rec_comp);
 
-    if(pa->primer_task != pick_right_only
-       && pa->primer_task != pick_hyb_probe_only) 
+    if( pa->pick_left_primer /* pa->primer_task != pick_right_only
+				&& pa->primer_task != pick_hyb_probe_only */) 
       qsort(&retval->f[0], retval->n_f, sizeof(*retval->f),
 	    primer_rec_comp);
 
@@ -882,6 +922,32 @@ choose_primers(primer_args *pa,
     if (0 != a_pair_array.storage_size) free(a_pair_array.pairs);
     return retval;
 }
+
+const pair_array_t *
+p3_get_retval_best_pairs(const p3retval *r) {
+  return &r->best_pairs;
+}
+
+const char *
+p3_get_retval_glob_err(const p3retval *r) {
+  return r->glob_err.data;
+}
+
+const char *
+p3_get_retval_per_sequence_err(const p3retval *r) {
+  return r->per_sequence_err.data;
+}
+
+const char *
+p3_get_retval_warnings(const p3retval *r) {
+  return r->warnings.data;
+}
+
+p3_output_type
+p3_get_retval_output_type(const p3retval *r) {
+  return r->output_type;
+}
+
 
 /* Call this function only if the 'stat's contains
    the _errors_ associated with a given primer
@@ -982,7 +1048,7 @@ add_pair(const primer_pair *pair,
 /* FIX ME --- simplify this function ? */
 static int
 make_primer_lists(p3retval *retval,
-		  const primer_args *pa,
+		  const p3_global_settings *pa,
 		  seq_args *sa,
 		  const dpal_arg_holder *dpal_arg_to_use)
 {
@@ -1208,7 +1274,7 @@ make_primer_lists(p3retval *retval,
 static int
 make_internal_oligo_list(retval, pa, sa, dpal_arg_to_use)
      p3retval *retval;
-     const primer_args *pa;
+     const p3_global_settings *pa;
      seq_args *sa;
      const dpal_arg_holder *dpal_arg_to_use;
 {
@@ -1280,7 +1346,7 @@ make_internal_oligo_list(retval, pa, sa, dpal_arg_to_use)
 #define OUTSIDE_STOP_WT    0.5
 static void
 oligo_param(pa, h, l, dpal_arg_to_use, sa, stats)
-    const primer_args *pa;
+    const p3_global_settings *pa;
     primer_rec *h;
     oligo_type l;
     const dpal_arg_holder *dpal_arg_to_use;
@@ -1589,7 +1655,7 @@ oligo_param(pa, h, l, dpal_arg_to_use, sa, stats)
 
 static void
 check_sequence_quality(pa, h, l, sa, j, k, r_min_q, r_min_q_end)
-    const primer_args *pa;
+    const p3_global_settings *pa;
     primer_rec *h;
     oligo_type l;
     const seq_args *sa;
@@ -1690,7 +1756,7 @@ oligo_overlaps_interval(start, len, intervals, num_intervals)
 /* Calculate the part of the objective function due to one primer. */
 static double
 p_obj_fn(pa, h, j)
-    const primer_args *pa;
+    const p3_global_settings *pa;
     primer_rec *h;
     int  j;
 {
@@ -1799,7 +1865,7 @@ oligo_max_template_mispriming(h)
 static int
 p3_print_oligo_lists(const p3retval *retval,
 		     const seq_args *sa,
-		     const primer_args *pa,
+		     const p3_global_settings *pa,
 		     pr_append_str *err)
 {
     int   first_base_index = pa->first_base_index;
@@ -1845,7 +1911,9 @@ p3_print_oligo_lists(const p3retval *retval,
     }
 
     if ( pa->primer_task == pick_pcr_primers_and_hyb_probe 
-	 || pa->primer_task == pick_hyb_probe_only) {
+	 || pa->primer_task == pick_hyb_probe_only /* pa->pick_internal_oligo */) {
+      /* FIX ME, the change above does not work correctly; put a test here and
+	 a breakpoint to debug */
       strcpy(file, sa->sequence_name);
       strcat(file, ".int");
       if (!(fh = fopen(file,"w"))) {
@@ -1868,7 +1936,7 @@ p3_print_oligo_lists(const p3retval *retval,
 }
 
 /* Return 1 on error, otherwise 0. */
-static int
+int
 p3_print_one_oligo_list(const seq_args *sa,
 			int n,
 			const primer_rec oligo_arr[],
@@ -1972,7 +2040,7 @@ print_oligo(FILE *fh,
 static int
 choose_pair_or_triple(retval, pa, sa,  dpal_arg_to_use, int_num, p)
      p3retval *retval;
-     const primer_args *pa;
+     const p3_global_settings *pa;
      seq_args *sa;
      const dpal_arg_holder *dpal_arg_to_use;
      int int_num;
@@ -2097,7 +2165,7 @@ choose_internal_oligo(retval, left, right, nm, sa, pa, dpal_arg_to_use)
      const primer_rec *left, *right;
      int *nm;
      seq_args *sa;
-     const primer_args *pa;
+     const p3_global_settings *pa;
      const dpal_arg_holder *dpal_arg_to_use;
 {
    int i,k;
@@ -2219,7 +2287,7 @@ primer_pair_comp(x1, x2)
 static int
 characterize_pair(retval, pa, sa, m, n, int_num, ppair, dpal_arg_to_use)
      p3retval *retval;
-     const primer_args *pa;
+     const p3_global_settings *pa;
      seq_args *sa;
      int m, n, int_num;
      primer_pair *ppair;
@@ -2462,7 +2530,7 @@ characterize_pair(retval, pa, sa, m, n, int_num, ppair, dpal_arg_to_use)
 
 void
 compute_position_penalty(pa, sa, h, o_type)
-  const primer_args *pa;
+  const p3_global_settings *pa;
   const seq_args *sa;
   primer_rec *h;
   oligo_type o_type;
@@ -2542,7 +2610,7 @@ pair_spans_target(pair, sa)
  */
 static double
 obj_fn(pa, h)
-    const primer_args *pa;
+    const p3_global_settings *pa;
     primer_pair *h;
 {
     double sum;
@@ -2598,7 +2666,7 @@ obj_fn(pa, h)
 }
 
 char *
-pr_gather_warnings(const seq_args *sa, const primer_args *pa) {
+pr_gather_warnings(const seq_args *sa, const p3_global_settings *pa) {
   pr_append_str warning;
 
   PR_ASSERT(NULL != sa);
@@ -2619,6 +2687,12 @@ pr_gather_warnings(const seq_args *sa, const primer_args *pa) {
   return pr_is_empty(&warning) ? NULL : warning.data;
 }
 
+static void
+init_pr_append_str(pr_append_str *s) {
+  s->data = NULL;
+  s->storage_size = 0;
+}
+
 pr_append_str *
 create_pr_append_str() {
   /* We cannot use pr_safe_malloc here
@@ -2628,15 +2702,23 @@ create_pr_append_str() {
 
   ret = malloc(sizeof(pr_append_str));
   if (NULL == ret) return NULL;
-  ret->data = NULL;
-  ret->storage_size = 0;
+  init_pr_append_str(ret);
+  /* ret->data = NULL;
+     ret->storage_size = 0;  */
   return ret;
+}
+
+static void
+destroy_pr_append_str_data(const pr_append_str *str) {
+  if (NULL == str) return;
+  if (str->data != NULL) free(str->data);
 }
 
 void
 destroy_pr_append_str(pr_append_str *str) {
   if (str == NULL) return;
-  if (str->data != NULL) free(str->data);
+  destroy_pr_append_str_data(str);
+  /* if (str->data != NULL) free(str->data); */
   free(str);
 }
 
@@ -2838,7 +2920,7 @@ oligo_compl(primer_rec *h,
 
 static void 
 primer_mispriming_to_template(primer_rec *h,
-			      const primer_args *pa,
+			      const p3_global_settings *pa,
 			      seq_args *sa,
 			      oligo_type l,
 			      int first,
@@ -2943,7 +3025,7 @@ primer_mispriming_to_template(primer_rec *h,
 static void 
 oligo_mispriming(h, pa, sa, l, align_args,  dpal_arg_to_use)
    primer_rec *h;
-   const primer_args *pa;
+   const p3_global_settings *pa;
    seq_args *sa;
    oligo_type l;
    const dpal_args *align_args;
@@ -3051,7 +3133,7 @@ oligo_mispriming(h, pa, sa, l, align_args,  dpal_arg_to_use)
 static int
 pair_repeat_sim(h, pa)
   primer_pair *h;
-  const primer_args *pa;
+  const p3_global_settings *pa;
 {
   int i, n, max, w;
   primer_rec *fw, *rev;
@@ -3233,6 +3315,66 @@ adjust_base_index_interval_list(intervals, num, first_index)
     for (i = 0; i < num; i++) intervals[i][0] -= first_index;
 }
 
+int
+p3_adjust_seq_args(const p3_global_settings *pa, 
+		   seq_args *sa, 
+		   pr_append_str *nonfatal_err)
+{
+  int seq_len, i;
+
+  if (NULL == sa->sequence) {
+    pr_append_new_chunk(nonfatal_err, "Missing SEQUENCE tag");
+    return 1;
+  } 
+
+    /* FIX ME -- temporary */
+    sa->num_targets = sa->tar2.count;
+    for (i = 0; i <PR_MAX_INTERVAL_ARRAY;  i++) {
+      sa->tar[i][0]     = sa->tar2.pairs[i][0];
+      sa->tar[i][1]     = sa->tar2.pairs[i][1];
+    }
+    sa->num_excl = sa->excl2.count;
+    for (i = 0; i <PR_MAX_INTERVAL_ARRAY;  i++) {
+      sa->excl[i][0]     = sa->excl2.pairs[i][0];
+      sa->excl[i][1]     = sa->excl2.pairs[i][1];
+    }
+    sa->num_internal_excl = sa->excl_internal2.count;
+    for (i = 0; i <PR_MAX_INTERVAL_ARRAY;  i++) {
+      sa->excl_internal[i][0]     = sa->excl_internal2.pairs[i][0];
+      sa->excl_internal[i][1]     = sa->excl_internal2.pairs[i][1];
+    }
+
+  seq_len = strlen(sa->sequence);
+
+  if (sa->incl_l == -1) {
+    sa->incl_l = seq_len;
+    sa->incl_s = pa->first_base_index;
+  }
+
+  sa->incl_s -= pa->first_base_index;
+  sa->start_codon_pos -= pa->first_base_index;
+
+  /*
+    adjust_base_index_interval_list(sa->tar, sa->num_targets,
+    pa->first_base_index);
+    adjust_base_index_interval_list(sa->excl2.pairs, sa->excl2.count,
+    pa->first_base_index);
+    adjust_base_index_interval_list(sa->excl_internal,
+    sa->num_internal_excl,
+    pa->first_base_index);
+  */
+
+  adjust_base_index_interval_list(sa->tar, sa->num_targets,
+				  pa->first_base_index);
+  adjust_base_index_interval_list(sa->excl, sa->num_excl,
+				  pa->first_base_index);
+  adjust_base_index_interval_list(sa->excl_internal,
+				  sa->num_internal_excl,
+				  pa->first_base_index);
+
+  return 0;
+}
+
 /*
  * Return 1 on error, 0 on success.  Set sa->trimmed_seq and possibly modify
  * sa->tar.  Upcase and check all bases in sa->trimmed_seq.  
@@ -3240,10 +3382,11 @@ adjust_base_index_interval_list(intervals, num, first_index)
  * checked, rather than updated, sa.
  */
 int
-_pr_data_control(const primer_args *pa,
+_pr_data_control(const p3_global_settings *pa,
 		 seq_args *sa,
 		 pr_append_str *glob_err,
-		 pr_append_str *nonfatal_err)
+		 pr_append_str *nonfatal_err,
+		 pr_append_str *warning)
 {
     static char s1[MAX_PRIMER_LENGTH+1];
     int i, pr_min, seq_len;
@@ -3252,26 +3395,9 @@ _pr_data_control(const primer_args *pa,
     if (NULL == sa->sequence) {
       pr_append_new_chunk(nonfatal_err, "Missing SEQUENCE tag");
       return 1;
-    } 
-
-    seq_len = strlen(sa->sequence);
-   
-    if (sa->incl_l == -1) {
-      sa->incl_l = seq_len;
-      sa->incl_s = pa->first_base_index;
     }
 
-    /* Adjust base indexes in sa. */
-    sa->incl_s -= pa->first_base_index;
-    sa->start_codon_pos -= pa->first_base_index;
-    adjust_base_index_interval_list(sa->tar, sa->num_targets,
-				    pa->first_base_index);
-    adjust_base_index_interval_list(sa->excl, sa->num_excl,
-				    pa->first_base_index);
-    adjust_base_index_interval_list(sa->excl_internal,
-				    sa->num_internal_excl,
-				    pa->first_base_index);
-    /* End adjust base indexes in sa. */
+    seq_len = strlen(sa->sequence);
 
     if (sa->n_quality !=0 && sa->n_quality != seq_len)
       pr_append_new_chunk(nonfatal_err, "Error in sequence quality data");
@@ -3283,7 +3409,7 @@ _pr_data_control(const primer_args *pa,
       pr_append_new_chunk(glob_err,
 			  "PRIMER_INTERNAL_OLIGO_MAX_TEMPLATE_MISHYB is not supported");
 
-    if (pa->p_args.min_size < 1)
+     if (pa->p_args.min_size < 1)
       pr_append_new_chunk(glob_err, "PRIMER_MIN_SIZE must be >= 1");
 
     if (pa->p_args.max_size > MAX_PRIMER_LENGTH) {
@@ -3294,37 +3420,37 @@ _pr_data_control(const primer_args *pa,
     }
 
     if (pa->p_args.opt_size > pa->p_args.max_size) {
-	pr_append_new_chunk(/* &pa-> */ glob_err,
+	pr_append_new_chunk(glob_err,
 			    "PRIMER_{OPT,DEFAULT}_SIZE > PRIMER_MAX_SIZE");
 	return 1;
     }
 
     if (pa->p_args.opt_size < pa->p_args.min_size) {
-	pr_append_new_chunk(/* &pa-> */ glob_err,
+	pr_append_new_chunk(glob_err,
 			    "PRIMER_{OPT,DEFAULT}_SIZE < PRIMER_MIN_SIZE");
 	return 1;
     }
 
     if (pa->o_args.max_size > MAX_PRIMER_LENGTH) {
-	pr_append_new_chunk(/* &pa-> */ glob_err,
+	pr_append_new_chunk(glob_err,
 		  "PRIMER_INTERNAL_OLIGO_MAX_SIZE exceeds built-in maximum");
         return 1;
     }
 
     if (pa->o_args.opt_size > pa->o_args.max_size) {
-	pr_append_new_chunk(/* &pa-> */ glob_err,
+	pr_append_new_chunk(glob_err,
 		  "PRIMER_INTERNAL_OLIGO_{OPT,DEFAULT}_SIZE > MAX_SIZE");
         return 1;
     }
 
     if (pa->o_args.opt_size < pa->o_args.min_size) {
-	pr_append_new_chunk(/* &pa-> */ glob_err,
+	pr_append_new_chunk(glob_err,
 		  "PRIMER_INTERNAL_OLIGO_{OPT,DEFAULT}_SIZE < MIN_SIZE");
         return 1;
     }
 
     if (pa->gc_clamp > pa->p_args.min_size) {
-	pr_append_new_chunk(/* &pa-> */ glob_err,
+	pr_append_new_chunk(glob_err,
 			    "PRIMER_GC_CLAMP > PRIMER_MIN_SIZE");
 	return 1;
     }
@@ -3353,7 +3479,7 @@ _pr_data_control(const primer_args *pa,
 	if(pa->pr_min[i]<pr_min) pr_min=pa->pr_min[i];
 
     if (pa->p_args.max_size > pr_min) {
-	pr_append_new_chunk(/* &pa-> */ glob_err,
+	pr_append_new_chunk(glob_err,
 			    "PRIMER_MAX_SIZE > min PRIMER_PRODUCT_SIZE_RANGE");
 	return 1;
     }
@@ -3361,13 +3487,13 @@ _pr_data_control(const primer_args *pa,
     if ((pick_pcr_primers_and_hyb_probe == pa->primer_task 
 	 || pick_hyb_probe_only == pa->primer_task)
 	&& pa->o_args.max_size > pr_min) {
-	pr_append_new_chunk(/* &pa-> */ glob_err,
+	pr_append_new_chunk(glob_err,
 		 "PRIMER_INTERNAL_OLIGO_MAX_SIZE > min PRIMER_PRODUCT_SIZE_RANGE");
         return 1;
     }
 
     if (pa->num_return < 1) {
-	pr_append_new_chunk(/* &pa-> */ glob_err,
+	pr_append_new_chunk(glob_err,
 			    "PRIMER_NUM_RETURN < 1");
         return 1;
     }
@@ -3420,55 +3546,61 @@ _pr_data_control(const primer_args *pa,
       }
     }
 
-    sa->trimmed_seq = pr_safe_malloc(sa->incl_l + 1);
+    sa->trimmed_seq = pr_safe_malloc(sa->incl_l + 1);  /* FIX ME write */
     _pr_substr(sa->sequence, sa->incl_s, sa->incl_l, sa->trimmed_seq);
    
     /* edited by T. Koressaar for lowercase masking */
-    sa->trimmed_orig_seq = pr_safe_malloc(sa->incl_l + 1);
+    sa->trimmed_orig_seq = pr_safe_malloc(sa->incl_l + 1);   /* FIX ME write */
     _pr_substr(sa->sequence, sa->incl_s, sa->incl_l, sa->trimmed_orig_seq);
    
-    sa->upcased_seq = pr_safe_malloc(strlen(sa->sequence) + 1);
+    sa->upcased_seq = pr_safe_malloc(strlen(sa->sequence) + 1);    /* FIX ME write */
     strcpy(sa->upcased_seq, sa->sequence);
     if ((offending_char = dna_to_upper(sa->upcased_seq, 1))) {
       offending_char = '\0';
       /* TODO add warning or error (depending on liberal base)
          here. */
     }
-    sa->upcased_seq_r = pr_safe_malloc(strlen(sa->sequence) + 1);
+    sa->upcased_seq_r = pr_safe_malloc(strlen(sa->sequence) + 1);   /* FIX ME write */
     _pr_reverse_complement(sa->upcased_seq, sa->upcased_seq_r);
 
-    if (_pr_check_intervals("TARGET", sa->num_targets, sa->tar, seq_len,
-			nonfatal_err, sa)
+#if 0
+    if (_pr_check_and_adjust_1_interval("TARGET", sa->num_targets, sa->tar, seq_len,
+			    nonfatal_err, sa, warning)      /* FIX ME write */
 	== 1) return 1;
-    sa->start_codon_pos -= sa->incl_s;
+    sa->start_codon_pos -= sa->incl_s;    /* FIX ME write */
 
-    if (_pr_check_intervals("EXCLUDED_REGION", sa->num_excl, sa->excl,
-			seq_len, nonfatal_err, sa)
+    if (_pr_check_and_adjust_1_interval("EXCLUDED_REGION", sa->num_excl, sa->excl,
+			seq_len, nonfatal_err, sa, warning)    /* FIX ME write */
 	== 1) return 1;
 
-    if (_pr_check_intervals("PRIMER_INTERNAL_OLIGO_EXCLUDED_REGION",
+    if (_pr_check_and_adjust_1_interval("PRIMER_INTERNAL_OLIGO_EXCLUDED_REGION",
 			sa->num_internal_excl, sa->excl_internal,
-			seq_len, nonfatal_err, sa)
+			seq_len, nonfatal_err, sa, warning)    /* FIX ME write */
 	== 1) return 1;
+#else
 
+    if (_pr_check_and_adjust_intervals(sa, seq_len, nonfatal_err, warning))
+      return 1;
+#endif
+    
     if (NULL != sa->quality) {
 	if(pa->p_args.min_quality != 0 && pa->p_args.min_quality < pa->quality_range_min) {
-	   pr_append_new_chunk(/* &pa-> */ glob_err,
+	   pr_append_new_chunk(glob_err,
 	       "PRIMER_MIN_QUALITY < PRIMER_QUALITY_RANGE_MIN");
            return 1;
         }
 	if (pa->p_args.min_quality != 0 && pa->p_args.min_quality > pa->quality_range_max) {
-	   pr_append_new_chunk(/* &pa-> */ glob_err,
+	   pr_append_new_chunk(glob_err,
 	       "PRIMER_MIN_QUALITY > PRIMER_QUALITY_RANGE_MAX");
            return 1;
         }
 	if (pa->o_args.min_quality != 0 && pa->o_args.min_quality <pa->quality_range_min) {
-	   pr_append_new_chunk(/* &pa-> */ glob_err,
+	   pr_append_new_chunk(glob_err,
 	    "PRIMER_INTERNAL_OLIGO_MIN_QUALITY < PRIMER_QUALITY_RANGE_MIN");
            return 1;
         }
 	if (pa->o_args.min_quality != 0 && pa->o_args.min_quality > pa->quality_range_max) {
-	   pr_append_new_chunk(/* &pa-> */ glob_err,
+	   pr_append_new_chunk(glob_err,
 	     "PRIMER_INTERNAL_OLIGO_MIN_QUALITY > PRIMER_QUALITY_RANGE_MAX");
            return 1;
         }
@@ -3490,8 +3622,8 @@ _pr_data_control(const primer_args *pa,
 
     if ((offending_char = dna_to_upper(sa->trimmed_seq, 0))) {
       if (pa->liberal_base) {
-	pr_append_new_chunk(&sa->warning,
-			    "Unrecognized base in input sequence");
+	pr_append_new_chunk(/* &sa->*/ warning,
+			    "Unrecognized base in input sequence");     /* FIX ME write to  warnings */
       }
       else {
 	pr_append_new_chunk(nonfatal_err, "Unrecognized base in input sequence");
@@ -3500,71 +3632,71 @@ _pr_data_control(const primer_args *pa,
     }
 
     if (pa->p_args.opt_tm < pa->p_args.min_tm || pa->p_args.opt_tm > pa->p_args.max_tm) {
-	 pr_append_new_chunk(/* &pa-> */ glob_err,
+	 pr_append_new_chunk(glob_err,
 			     "Optimum primer Tm lower than minimum or higher than maximum");
 	 return 1;
     }
     if (pa->o_args.opt_tm < pa->o_args.min_tm || pa->o_args.opt_tm > pa->o_args.max_tm) {
-	 pr_append_new_chunk(/* &pa-> */ glob_err,
+	 pr_append_new_chunk(glob_err,
 			     "Illegal values for PRIMER_INTERNAL_OLIGO_TM");
 	 return 1;
     }
     if (pa->p_args.min_gc > pa->p_args.max_gc
        || pa->p_args.min_gc > 100
        || pa->p_args.max_gc < 0){
-	 pr_append_new_chunk(/* &pa-> */ glob_err,
+	 pr_append_new_chunk(glob_err,
 			     "Illegal value for PRIMER_MAX_GC and PRIMER_MIN_GC");
 	 return 1;
     }
     if (pa->o_args.min_gc > pa->o_args.max_gc
        || pa->o_args.min_gc > 100
        || pa->o_args.max_gc < 0) {
-	 pr_append_new_chunk(/* &pa-> */ glob_err,
+	 pr_append_new_chunk(glob_err,
 			     "Illegal value for PRIMER_INTERNAL_OLIGO_GC");
 	 return 1;
     }
     if (pa->p_args.num_ns_accepted < 0) {
-	 pr_append_new_chunk(/* &pa-> */ glob_err,
+	 pr_append_new_chunk(glob_err,
 			     "Illegal value for PRIMER_NUM_NS_ACCEPTED");
 	 return 1;
     }
     if (pa->o_args.num_ns_accepted < 0){ 
-	 pr_append_new_chunk(/* &pa-> */ glob_err,
+	 pr_append_new_chunk(glob_err,
 			     "Illegal value for PRIMER_INTERNAL_OLIGO_NUM_NS");
 	 return 1;
     }
     if (pa->p_args.max_self_any < 0 
 	|| pa->p_args.max_self_end < 0
 	|| pa->pair_compl_any < 0 || pa->pair_compl_end < 0) {
-         pr_append_new_chunk(/* &pa-> */ glob_err,
+         pr_append_new_chunk(glob_err,
 	     "Illegal value for primer complementarity restrictions");
 	 return 1;
     }
     if( pa->o_args.max_self_any < 0
 	|| pa->o_args.max_self_end < 0) {
-	  pr_append_new_chunk(/* &pa-> */ glob_err,
+	  pr_append_new_chunk(glob_err,
 	      "Illegal value for internal oligo complementarity restrictions");
 	  return 1;
     }
     if (pa->p_args.salt_conc <= 0 || pa->p_args.dna_conc<=0){
-	  pr_append_new_chunk(/* &pa-> */ glob_err,
+	  pr_append_new_chunk(glob_err,
 	      "Illegal value for primer salt or dna concentration");
 	  return 1;
     }
    if((pa->p_args.dntp_conc < 0 && pa->p_args.divalent_conc !=0 )
       || pa->p_args.divalent_conc<0){ /* added by T.Koressaar */
-      pr_append_new_chunk(/* &pa-> */ glob_err, "Illegal value for primer divalent salt or dNTP concentration");
+      pr_append_new_chunk(glob_err, "Illegal value for primer divalent salt or dNTP concentration");
       return 1;
    }
    
     if(pa->o_args.salt_conc<=0||pa->o_args.dna_conc<=0){ 
-	  pr_append_new_chunk(/* &pa-> */ glob_err,
+	  pr_append_new_chunk(glob_err,
 	      "Illegal value for internal oligo salt or dna concentration");
 	  return 1;
     }
    if((pa->o_args.dntp_conc<0 && pa->o_args.divalent_conc!=0)
       || pa->o_args.divalent_conc < 0) { /* added by T.Koressaar */
-      pr_append_new_chunk(/* &pa-> */ glob_err,
+      pr_append_new_chunk(glob_err,
 			  "Illegal value for internal oligo divalent salt or dNTP concentration");
       return 1;
    }
@@ -3576,10 +3708,10 @@ _pr_data_control(const primer_args *pa,
 		"is valid only when number of targets <= 1");
     }
     if (!_PR_DEFAULT_POSITION_PENALTIES(pa) && 0 == sa->num_targets) {
-      pr_append_new_chunk(&sa->warning,
+      pr_append_new_chunk(/* &sa-> */ warning,
 			  "Non-default inside penalty or outside penalty ");
-      pr_append(&sa->warning,
-		"has no effect when number of targets is 0");
+      pr_append(/* &sa-> */warning,
+		"has no effect when number of targets is 0");     /* FIX ME write warning */
     }
     if (pa->primer_task != pick_pcr_primers_and_hyb_probe 
 	&& pa->primer_task != pick_hyb_probe_only
@@ -3634,7 +3766,7 @@ _pr_data_control(const primer_args *pa,
     if ((pa->pr_pair_weights.product_tm_lt || 
 	 pa->pr_pair_weights.product_tm_gt)
 	&& pa->product_opt_tm == PR_UNDEFINED_DBL_OPT) {
-        pr_append_new_chunk(/* &pa-> */ glob_err, 
+        pr_append_new_chunk(glob_err, 
 	   "Product temperature is part of objective function while optimum temperature is not defined");
         return 1;
      }
@@ -3642,7 +3774,7 @@ _pr_data_control(const primer_args *pa,
     if((pa->pr_pair_weights.product_size_lt ||
 	pa->pr_pair_weights.product_size_gt) 
        && pa->product_opt_size == PR_UNDEFINED_INT_OPT){
-       pr_append_new_chunk(/* &pa-> */ glob_err,
+       pr_append_new_chunk(glob_err,
 	  "Product size is part of objective function while optimum size is not defined");
        return 1;
     }
@@ -3650,7 +3782,7 @@ _pr_data_control(const primer_args *pa,
     if ((pa->p_args.weights.gc_content_lt || 
 	 pa->p_args.weights.gc_content_gt)
 	&& pa->p_args.opt_gc_content == DEFAULT_OPT_GC_PERCENT) {
-        pr_append_new_chunk(/* &pa-> */ glob_err, 
+        pr_append_new_chunk(glob_err, 
 	   "Primer GC content is part of objective function while optimum gc_content is not defined");
         return 1;
      }
@@ -3658,7 +3790,7 @@ _pr_data_control(const primer_args *pa,
     if ((pa->o_args.weights.gc_content_lt || 
 	 pa->o_args.weights.gc_content_gt)
 	&& pa->o_args.opt_gc_content == DEFAULT_OPT_GC_PERCENT) {
-        pr_append_new_chunk(/* &pa-> */ glob_err, 
+        pr_append_new_chunk(glob_err, 
 	   "Hyb probe GC content is part of objective function while optimum gc_content is not defined");
         return 1;
      }
@@ -3666,38 +3798,59 @@ _pr_data_control(const primer_args *pa,
     if ((pa->primer_task != pick_pcr_primers_and_hyb_probe 
 	 && pa->primer_task != pick_hyb_probe_only ) &&
 			(pa->pr_pair_weights.io_quality)) {
-       pr_append_new_chunk(/* &pa-> */ glob_err,
+       pr_append_new_chunk(glob_err,
 	  "Internal oligo quality is part of objective function while internal oligo choice is not required");
        return 1;
     }
 
     if (pa->p_args.weights.repeat_sim && (!seq_lib_num_seq(pa->p_args.repeat_lib))) {
-       pr_append_new_chunk(/* &pa-> */ glob_err,
+       pr_append_new_chunk(glob_err,
 	  "Mispriming score is part of objective function, but mispriming library is not defined");
        return 1;
     }
 
     if (pa->o_args.weights.repeat_sim && (!seq_lib_num_seq(pa->o_args.repeat_lib))) {
-      pr_append_new_chunk(/* &pa-> */ glob_err,
+      pr_append_new_chunk(glob_err,
       "Internal oligo mispriming score is part of objective function while mishyb library is not defined");
       return 1;
     }
 
     if (pa->pr_pair_weights.repeat_sim && (!(seq_lib_num_seq(pa->p_args.repeat_lib)))) {
-      pr_append_new_chunk(/* &pa-> */ glob_err,
+      pr_append_new_chunk(glob_err,
 	"Mispriming score is part of objective function, but mispriming library is not defined");
       return 1;
     }
 
     if(pa->pr_pair_weights.io_quality 
 	&& pa->primer_task != pick_pcr_primers_and_hyb_probe ) {
-	  pr_append_new_chunk(/* &pa-> */ glob_err,
+	  pr_append_new_chunk(glob_err,
 	   "Internal oligo quality is part of objective function while internal oligo choice is not required");
         return 1;
     }
 
     return (NULL == sa->error.data && NULL == /* pa->*/ glob_err->data) ? 0 : 1;
 } /* _pr_data_control */
+
+
+static int
+_pr_check_and_adjust_intervals(seq_args *sa, int seq_len, pr_append_str * nonfatal_err, pr_append_str *warning) {
+
+    if (_pr_check_and_adjust_1_interval("TARGET", sa->num_targets, sa->tar, seq_len,
+			    nonfatal_err, sa, warning)      /* FIX ME write */
+	== 1) return 1;
+    sa->start_codon_pos -= sa->incl_s;    /* FIX ME write */
+
+    if (_pr_check_and_adjust_1_interval("EXCLUDED_REGION", sa->num_excl, sa->excl,
+			seq_len, nonfatal_err, sa, warning)    /* FIX ME write */
+	== 1) return 1;
+
+    if (_pr_check_and_adjust_1_interval("PRIMER_INTERNAL_OLIGO_EXCLUDED_REGION",
+			sa->num_internal_excl, sa->excl_internal,
+			seq_len, nonfatal_err, sa, warning)    /* FIX ME write */
+	== 1) return 1;
+    return 0;
+}
+
 
 /* 
  * Check intervals, and add any errors to err.
@@ -3706,12 +3859,13 @@ _pr_data_control(const primer_args *pa,
  * 
  */ 
 static int
-_pr_check_intervals(const char *tag_name,
+_pr_check_and_adjust_1_interval(const char *tag_name,
 		    const int num_intervals,
-		    interval_array_t intervals,
+                    		    interval_array_t intervals,
 		    const int seq_len,
 		    pr_append_str *err,
-		    seq_args *sa)
+		    seq_args *sa,
+		    pr_append_str *warning)
 {
     int i;
     int outside_warning_issued = 0;
@@ -3741,7 +3895,7 @@ _pr_check_intervals(const char *tag_name,
 	}
     }
     return 0;
-} /* _pr_check_intervals  */
+} /* _pr_check_and_adjust_intervals  */
 
 /* Put substring of seq starting at n with length m into s. */
 void
@@ -3809,7 +3963,7 @@ _pr_reverse_complement(const char *seq, char *s)
 
 int
 _pr_need_template_mispriming(pa)
-  const primer_args *pa;
+  const p3_global_settings *pa;
 {
   return 
     pa->p_args.max_template_mispriming >= 0
@@ -3819,7 +3973,7 @@ _pr_need_template_mispriming(pa)
 
 int
 _pr_need_pair_template_mispriming(pa)
-  const primer_args *pa;
+  const p3_global_settings *pa;
 {
   return 
     pa->pair_max_template_mispriming >= 0
@@ -4275,30 +4429,248 @@ _set_string(char **loc, const char *new_string) {
   return 0;
 }
 
-int
-p3_set_seq_args_sequence(seq_args *sargs, const char *new_seq) {
-  return _set_string(&sargs->sequence, new_seq);
+interval_array_t2 *
+p3_get_seq_args_tar2(seq_args *sargs) {
+  return &sargs->tar2 ;
+}
+
+interval_array_t2 *
+p3_get_seq_args_excl2(seq_args *sargs) {
+  return &sargs->excl2 ;
+}
+
+interval_array_t2 *
+p3_get_seq_args_excl_internal2(seq_args *sargs) {
+  return &sargs->excl_internal2 ;
+}
+
+void
+p3_set_seq_args_num_excl(seq_args *sargs, int num_excl) {
+  sargs->num_excl = num_excl;
+}
+
+void
+p3_set_seq_args_num_internal_excl(seq_args *sargs, int num_internal_excl) {
+  sargs->num_internal_excl = num_internal_excl;
+}
+void
+p3_set_seq_args_incl_s(seq_args *sargs, int incl_s) {
+  sargs->incl_s = incl_s;
+}
+
+void
+p3_set_seq_args_incl_l(seq_args *sargs, int incl_l) {
+  sargs->incl_l = incl_l;
+}
+
+void 
+p3_set_seq_args_start_codon_pos(seq_args *sargs, int start_codon_pos) {
+  sargs->start_codon_pos = start_codon_pos;
+}
+
+void
+p3_set_seq_args_stop_codon_pos(seq_args *sargs, int stop_codon_pos) {
+  sargs->stop_codon_pos = stop_codon_pos;
+}
+
+/* fix me 
+void
+void * p3_set_seq_args_quality(seq_args *sargs, int *quality) {
+  sargs->quality = quality 
+}
+*/
+
+
+void
+p3_set_seq_args_n_quality(seq_args *sargs, int n_quality) {
+  sargs->n_quality = n_quality ;
 }
 
 int
-p3_set_seq_args_sequence_name(seq_args *sargs, const char *new_seq) {
-  return _set_string(&sargs->sequence_name, new_seq);
+p3_set_seq_args_sequence(seq_args *sargs, const char *sequence) {
+  return _set_string(&sargs->sequence, sequence) ;
 }
 
 int
-p3_set_seq_args_left_input(seq_args *sargs, const char *new_seq) {
-  return _set_string(&sargs->left_input, new_seq);
+p3_set_seq_args_sequence_name(seq_args *sargs, const char* sequence_name) {
+ return _set_string(&sargs->sequence_name, sequence_name); 
+}
+
+int 
+p3_set_seq_args_sequence_file(seq_args *sargs, const char *sequence_file) {
+    return _set_string(&sargs->sequence_file, sequence_file)  ;
 }
 
 int
-p3_set_seq_args_right_input(seq_args *sargs, const char *new_seq) {
-  return _set_string(&sargs->right_input, new_seq);
+p3_set_seq_args_trimmed_seq(seq_args *sargs, const char *trimmed_seq) {
+   return _set_string(&sargs->trimmed_seq, trimmed_seq)  ;
+}
+
+int 
+p3_set_seq_args_trimmed_orig_seq(seq_args *sargs, const char *trimmed_orig_seq) {
+   return _set_string(&sargs->trimmed_orig_seq, trimmed_orig_seq) ;
+}
+
+int 
+p3_set_seq_args_upcased_seq(seq_args *sargs, const char *upcased_seq) {
+   return _set_string(&sargs->upcased_seq, upcased_seq)  ;
+}
+
+int 
+p3_set_seq_args_upcased_seq_r(seq_args *sargs, const char *upcased_seq_r) {
+   return _set_string(&sargs->upcased_seq_r, upcased_seq_r)  ;
+}
+
+int 
+p3_set_seq_args_left_input(seq_args *sargs, const char *left_input) {
+   return _set_string(&sargs->left_input, left_input)  ;
+}
+
+int 
+p3_set_seq_args_right_input(seq_args *sargs, const char *right_input) {
+   return _set_string(&sargs->right_input, right_input)  ;
 }
 
 int
-p3_set_seq_args_internal_input(seq_args *sargs, const char *new_seq) {
-  return _set_string(&sargs->internal_input, new_seq);
+p3_set_seq_args_internal_input(seq_args *sargs, const char *internal_input) {
+   return _set_string(&sargs->internal_input, internal_input)  ;
 }
+
+void p3_set_global_settings_primer_task(p3_global_settings * p , int primer_task){
+  p->primer_task = primer_task;
+}
+
+void p3_set_global_settings_pick_left_primer(p3_global_settings * p , int pick_left_primer){
+p->pick_left_primer = pick_left_primer;
+}
+
+void p3_set_global_settings_pick_right_primer(p3_global_settings * p , int pick_right_primer){
+  p->pick_right_primer = pick_right_primer;
+}
+
+void p3_set_global_settings_pick_internal_oligo(p3_global_settings * p , int pick_internal_oligo){
+  p->pick_internal_oligo = pick_internal_oligo;
+}
+
+void p3_set_global_settings_file_flag(p3_global_settings * p , int file_flag){
+  p->file_flag = file_flag;
+}
+void p3_set_global_settings_explain_flag(p3_global_settings * p , int explain_flag){
+  p->explain_flag = explain_flag;
+}
+
+void p3_set_global_settings_first_base_index(p3_global_settings * p , int first_base_index){
+  p->first_base_index = first_base_index;
+}
+
+void p3_set_global_settings_liberal_base(p3_global_settings * p , int liberal_base){
+  p->liberal_base = liberal_base;
+}
+
+void p3_set_global_settings_num_return(p3_global_settings * p , int num_return){
+  p->num_return = num_return; 
+}
+
+void p3_set_global_settings_pick_anyway(p3_global_settings * p , int pick_anyway){
+  p->pick_anyway = pick_anyway ;
+}
+
+void p3_set_global_settings_lib_ambiguity_codes_consensus(p3_global_settings * p , int lib_ambiguity_codes_consensus) {
+  p->lib_ambiguity_codes_consensus = lib_ambiguity_codes_consensus;
+}
+
+void p3_set_global_settings_quality_range_min(p3_global_settings * p , int quality_range_min){
+  p->quality_range_min = quality_range_min;
+}
+
+void p3_set_global_settings_quality_range_max(p3_global_settings * p , int quality_range_max){
+  p->quality_range_max = quality_range_max ;
+}
+
+args_for_one_oligo_or_primer *p3_get_global_settings_p_args(p3_global_settings * p) {
+  return &p->p_args;
+}
+
+args_for_one_oligo_or_primer *p3_get_global_settings_o_args(p3_global_settings * p) {
+  return &p->o_args;
+}
+
+void p3_set_global_settings_tm_santalucia(p3_global_settings * p , int tm_santalucia){
+  p->tm_santalucia = tm_santalucia;
+}
+
+void p3_set_global_settings_salt_corrections(p3_global_settings * p , int salt_corrections){
+  p->salt_corrections = salt_corrections;
+}
+
+void p3_set_global_settings_max_end_stability(p3_global_settings * p , int max_end_stability){
+  p->max_end_stability = max_end_stability;
+}
+
+void p3_set_global_settings_gc_clamp(p3_global_settings * p , int gc_clamp){
+  p->gc_clamp = gc_clamp;
+}
+
+void p3_set_global_settings_lowercase_masking(p3_global_settings * p , int lowercase_masking){
+  p->lowercase_masking = lowercase_masking;
+}
+
+void p3_set_global_settings_outside_penalty(p3_global_settings * p , double outside_penalty){
+  p->outside_penalty = outside_penalty;
+}
+
+void p3_set_global_settings_inside_penalty(p3_global_settings * p , double inside_penalty){
+  p->inside_penalty = inside_penalty;
+}
+
+void  p3_get_global_settings_pr_min(p3_global_settings * p, int *pr_min){
+  /*  p->pr_min = pr_min;  FIX this */
+}
+
+void p3_set_global_settings_pr_max (p3_global_settings * p , int *pr_max){
+  /*  p->pr_max = pr_max;  FIX this */
+}
+
+void p3_set_global_settings_num_intervals(p3_global_settings * p , int num_intervals){
+  p->num_intervals = num_intervals;
+}
+
+void p3_set_global_settings_product_opt_size(p3_global_settings * p , int product_opt_size){
+  p->product_opt_size = product_opt_size;
+}
+
+void p3_set_global_settings_product_min_tm(p3_global_settings * p , double product_min_tm){
+  p->product_min_tm = product_min_tm;
+}
+
+void p3_set_global_settings_product_max_tm(p3_global_settings * p , double product_max_tm){
+  p->product_max_tm = product_max_tm;
+}
+
+void p3_set_global_settings_product_opt_tm(p3_global_settings * p , double product_opt_tm){
+  p->product_opt_tm = product_opt_tm;
+}
+
+void p3_set_global_settings_pair_max_template_mispriming(p3_global_settings * p , short  pair_max_template_mispriming){
+  p->pair_max_template_mispriming = pair_max_template_mispriming;
+}
+
+void p3_set_global_settings_pair_repeat_compl(p3_global_settings * p, short  pair_repeat_compl){ 
+  p->pair_repeat_compl = pair_repeat_compl;
+}
+
+void p3_set_global_settings_pair_compl_any(p3_global_settings * p , short  pair_compl_any){
+  p->pair_compl_any = pair_compl_any;
+}
+
+void p3_set_global_settings_pair_compl_end(p3_global_settings * p , short  pair_compl_end){
+  p->pair_compl_end = pair_compl_end;
+}
+
+void p3_set_global_settings_max_diff_tm(p3_global_settings * p , double max_diff_tm){
+  p->max_diff_tm = max_diff_tm;
+}
+
 
 /* =========================================================== */
 /* Malloc and realloc wrappers that longjmp() on failure       */
