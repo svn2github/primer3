@@ -229,14 +229,6 @@ main(argc,argv)
     PR_ASSERT(pr_is_empty(&retval->per_sequence_err))
 
     /* Print out the results: */
-    /* FIX ME: this sets output, it should go into libprimer*/
-    if (global_pa->pick_left_primer && global_pa->pick_right_primer) {
-    	retval->output_type = primer_pairs;
-    } else {
-    	retval->output_type = primer_list;
-    }
-    
-    /* Print results for primer pairs */
     /* Use formated output */
     if (prog_args.format_output) {
     	format_output(stdout, &prog_args, global_pa, sa, retval, pr_release);

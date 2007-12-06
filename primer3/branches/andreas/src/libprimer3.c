@@ -764,6 +764,17 @@ choose_primers(primer_args *pa,
 
     if (retval == NULL)  return NULL;
     best_pairs = &retval->best_pairs;
+    
+    /* Setts the output type */
+    if (pa->pick_left_primer && pa->pick_right_primer) {
+    	retval->output_type = primer_pairs;
+    } else {
+    	retval->output_type = primer_list;
+    }
+    
+    /* Print results for primer pairs */
+
+    
 
     /*
      * For catching ENOMEM.  We can only use longjmp to
