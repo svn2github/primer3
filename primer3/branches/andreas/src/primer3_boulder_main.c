@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <signal.h>
 #include <ctype.h>
-#include <string.h> /* strlen(), memset(), strcmp() */
+#include <string.h> /* strcmp() */
 #include <stdlib.h> /* free() */
 #include "format_output.h"
 #include "libprimer3.h"
@@ -58,28 +58,29 @@ main(argc,argv)
     char *argv[]; 
 { 
   /* Setup the input data structures handlers */
-  program_args prog_args;
-  prog_args.io_version = 0; /* AU count is 0 for "old" bolder io */
-  /* FIX ME: Is it necessary?? Isnt it done in memset?? line 100? */
-  primer_args *global_pa;
+  int format_output = 0;
+  int strict_tags = 0;
+  int io_version = 0;
+
+  p3_global_settings *global_pa;
   seq_args *sa;
+
   /* Setup the error structures handlers */
   pr_append_str *fatal_parse_err = NULL;
   pr_append_str *nonfatal_parse_err = NULL;
   pr_append_str *combined_retval_err = NULL;
+  
   /* Setup the output data structure handlers */
   p3retval *retval = NULL;
-  
   int input_found=0;
 
   /* Get the program name for correct error messages */
   pr_program_name = argv[0];
   p3_set_program_name(pr_program_name);
-  /* 
-   * We set up some signal handlers in case someone starts up the program
+
+  /* We set up some signal handlers in case someone starts up the program
    * from the command line, wonders why nothing is happening, and then kills
-   * the program.
-   */
+   * the program. */
   signal(SIGINT, sig_handler);
   signal(SIGTERM, sig_handler);
 
@@ -88,44 +89,32 @@ main(argc,argv)
   if (!global_pa) {
     exit(-2); /* Out of memory. */
   }
-  /* FIX ME: This call is redundant, its part of p3_create_global_settings */
-  pr_set_default_global_args(global_pa);
   
-  /* Read in the prog_args provided with program call */
-  memset(&prog_args, 0, sizeof(prog_args)); /* Set all prog_args to 0 */
+  /* Read in the flags provided with the program call */
   while (--argc > 0) {
     argv++;
     if (!strcmp(*argv, "-format_output")) {
-      prog_args.format_output = 1;
-    }  else if (!strcmp(*argv, "-2x_compat")) {
+      format_output = 1;
+    } else if (!strcmp(*argv, "-2x_compat")) {
       printf( "PRIMER_ERROR=flag -2x_compat is no longer supported\n=\n");
       exit (-1);
-    }  else if (!strncmp(*argv, "-io_version=", 10)) {
+    } else if (!strncmp(*argv, "-io_version=", 10)) {
       /* This reads in the version number required for extended io functions */
-      /*  FIX ME: Do this different and better */
-      int version=0;
+      /* There may be a better way, but it works */
       char tag2int[20];
       strncpy (tag2int,*argv,19);
-      int counter;
-      int read_int=0;
-      for (counter=0; counter<=19 ; counter++)
-      {
-    	  if (read_int != 0){
-    		  if (isdigit(tag2int[counter])){
-    			  version=10*version+(tag2int[counter] - '0');
-    		  }
-    		  else {
-    			  read_int=0;
-    			  counter=20;
-    		  }
-     	  }
-    	  if (tag2int[counter] == '=') {
-    		  read_int=1;
-    	  }
+      int counter = 12;
+      while (isdigit(tag2int[counter])) {
+	if (isdigit(tag2int[counter])) {
+	  io_version=10*io_version+(tag2int[counter] - '0');
+	}
+	if ( counter > 20 ) {
+	  break; /* Just to be save */
+	}
+	counter++;
       }
-      prog_args.io_version = version;
     } else if (!strcmp(*argv, "-strict_tags")) {
-      prog_args.strict_tags = 1;
+      strict_tags = 1;
     } else  {
       print_usage();
       exit(-1);
@@ -152,9 +141,6 @@ main(argc,argv)
     if (!(sa = create_seq_arg())) {
       exit(-2);
     }
-    /*if (!(sa = malloc(sizeof(*sa)))) {
-      exit(-2);
-    } */
 
     /* Reset all errors handlers and the return structure */
     pr_set_empty(fatal_parse_err);
@@ -165,60 +151,60 @@ main(argc,argv)
     /* Read data from stdin until a "=" line occurs.  Assign parameter
      * values for primer picking to pa and sa. Perform initial data
      * checking. */
-    if (read_record(&prog_args, !prog_args.format_output, global_pa, sa, 
+    if (read_record(&strict_tags, &io_version, !format_output, global_pa, sa, 
 		    fatal_parse_err, nonfatal_parse_err) <= 0) {
       break; /* leave the program loop and complain later */
     }
+    
     input_found = 1;
+    if (global_pa->primer_task == pick_pcr_primers_and_hyb_probe) {
+      PR_ASSERT(global_pa->pick_internal_oligo);
+    }
 
     /* If there are fatal errors, write the proper message and exit */
     if (fatal_parse_err->data != NULL) {
-      if (prog_args.format_output) {
-	    format_error(stdout, sa->sequence_name, fatal_parse_err->data);
+      if (format_output) {
+	format_error(stdout, sa->sequence_name, fatal_parse_err->data);
       } else {
-	    boulder_print_error(fatal_parse_err->data);
+	boulder_print_error(fatal_parse_err->data);
       }
       fprintf(stderr, "%s: %s\n", 
 	      pr_program_name, fatal_parse_err->data);
       exit(-4);
     }
 
-    /* FIX ME -- read in mispriming libraries here */
+    /* POSSIBLE CHANGE -- read in mispriming libraries here? */
 
     /* If there are nonfatal errors, write the proper message
      * and finish this loop */
+    p3_adjust_seq_args(global_pa, sa, nonfatal_parse_err);
     if (!pr_is_empty(nonfatal_parse_err)) {
-      if (prog_args.format_output) {
-        format_error(stdout, sa->sequence_name, 
-		nonfatal_parse_err->data);
+      if (format_output) {
+	format_error(stdout, sa->sequence_name, 
+		     nonfatal_parse_err->data);
       } else {
-	    boulder_print_error(nonfatal_parse_err->data);
+	boulder_print_error(nonfatal_parse_err->data);
       }
       goto finish_loop;
     }
 
-    /* FIX ME create retval inside choose_primers */
-    /* if (!(retval = create_p3retval())) {
-      exit(-2); } */
-    /* Pick the primers, the ultimate key function in the program */
-    retval = choose_primers(/* retval, */ global_pa, sa);
+    retval = choose_primers(global_pa, sa);
     if (NULL == retval) exit(-2); /* Out of memory. */
 
     /* If there are errors, write the proper message
      * and finish this loop */
-    if (!pr_is_empty(&retval->glob_err)	||
-	    !pr_is_empty(&retval->per_sequence_err)) {
-	      /* ||!pr_is_empty(&sa->error) */    
+    if (!pr_is_empty(&retval->glob_err)
+	||	!pr_is_empty(&retval->per_sequence_err)) {
       pr_append_new_chunk(combined_retval_err, 
-    		  retval->glob_err.data);
+			  retval->glob_err.data);
       pr_append_new_chunk(combined_retval_err, 
-    		  retval->per_sequence_err.data);
-      /* pr_append_new_chunk(combined_retval_err, sa->error.data); */
-      if (prog_args.format_output) {
-	    format_error(stdout, sa->sequence_name,
+			  retval->per_sequence_err.data);
+
+      if (format_output) {
+	format_error(stdout, sa->sequence_name,
 		     combined_retval_err->data);
       } else {
-	    boulder_print_error(combined_retval_err->data);
+	boulder_print_error(combined_retval_err->data);
       }
       goto finish_loop;
     }
@@ -226,25 +212,25 @@ main(argc,argv)
     /* Check if the error messages are empty */
     /* PR_ASSERT(pr_is_empty(&sa->error)) */
     PR_ASSERT(pr_is_empty(&retval->glob_err))
-    PR_ASSERT(pr_is_empty(&retval->per_sequence_err))
-
-    /* Print out the results: */
-    /* Use formated output */
-    if (prog_args.format_output) {
-    	format_output(stdout, &prog_args, global_pa, sa, retval, pr_release);
-      }
+      PR_ASSERT(pr_is_empty(&retval->per_sequence_err))
+    
+      /* Print out the results: */
+      /* Use formated output */
+      if (format_output) {
+	print_format_output(stdout, &io_version, global_pa, 
+			    sa, retval, pr_release);
+      } 
     /* Use boulder output */
-    else {
-	    boulder_print(&prog_args, global_pa, sa, retval);
-    }
- 
-    finish_loop: /* Here the falid loops join in again */
+      else {
+	boulder_print(&io_version, global_pa, sa, retval);
+      }
+     
+  finish_loop: /* Here the failed loops join in again */
     if (NULL != retval) {
       /* Check for errors and print them */
       if (NULL != retval->glob_err.data) {
-		fprintf(stderr, "%s: %s\n", pr_program_name,
-				retval->glob_err.data);
-		exit(-4);
+	fprintf(stderr, "%s: %s\n", pr_program_name, retval->glob_err.data);
+	exit(-4);
       }
     }
     /* Delete the data structures out of the memory */
@@ -255,9 +241,8 @@ main(argc,argv)
    * End of the primary working loop */
 
   /* To avoid being distracted when looking for leaks: */
-  destroy_seq_lib(global_pa->p_args.repeat_lib);
-  destroy_seq_lib(global_pa->o_args.repeat_lib);
-  free(global_pa);
+  p3_destroy_global_settings(global_pa);
+  global_pa = NULL;
   destroy_pr_append_str(fatal_parse_err);
   destroy_pr_append_str(nonfatal_parse_err);
   destroy_pr_append_str(combined_retval_err);
@@ -285,7 +270,7 @@ print_usage()
     fprintf(stderr, "$ primer3_core < my_input_file\n");
 }
 
-/* Print out copyright, a short usage message and the signal*/
+/* Print out copyright, a short usage message and the signal */
 static void
 sig_handler(signal)
     int signal;

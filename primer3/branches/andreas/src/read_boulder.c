@@ -56,12 +56,19 @@ static void   parse_double(const char *, const char *, double *,
 static void   parse_int(const char *, const char *, int *, pr_append_str *);
 static const char *parse_int_pair(const char *, const char *, char, int *, int *,
 			    pr_append_str *);
-static void   parse_interval_list(const char *, const char *, int*,
-				  interval_array_t, pr_append_str *);
+
+static void   parse_interval_list(const char *tag_name,
+				   const char *datum,
+				   interval_array_t2 *interval_arr,
+				   pr_append_str *err);
+
+
 static void   parse_product_size(const char *, char *, p3_global_settings *,
 				 pr_append_str *);
 static void   tag_syntax_error(const char *, const char *,  pr_append_str *);
 static int    parse_seq_quality(char *, int **);
+
+static char *pr_program_name = "TMP";
 
 /* 
  * Hack to support old SunOS headers.  (We do not try to declare _all_
@@ -109,9 +116,9 @@ extern double strtod();
        continue;                               \
    }
 
-#define COMPARE_INTERVAL_LIST(TAG, SIZE, LIST)                   \
+#define COMPARE_INTERVAL_LIST(TAG, PLACE)                   \
    if (COMPARE(TAG)) {                                           \
-       parse_interval_list(TAG, datum, &SIZE, LIST, parse_err);  \
+       parse_interval_list(TAG, datum, PLACE, parse_err);  \
        continue;                                                 \
    }
 
@@ -119,14 +126,13 @@ extern double strtod();
  * See read_boulder.h for description.
  */
 int
-read_record(const program_args *prog_args, 
+read_record(const int *strict_tags,
+	    const int *io_version,
 	    int   echo_output,
 	    p3_global_settings *pa, 
 	    seq_args *sa, 
 	    pr_append_str *glob_err,  /* Really should be called fatal_parse_err */
-	    pr_append_str *nonfatal_parse_err
-)
-{ 
+	    pr_append_str *nonfatal_parse_err) { 
   int line_len; /* seq_len; n_quality; */
     int tag_len, datum_len;
     int data_found = 0;
@@ -144,8 +150,7 @@ read_record(const program_args *prog_args,
     while ((s = p3_read_line(stdin)) != NULL && strcmp(s,"=")) {
 	data_found = 1;
 	/* Print out the input */
-	if (0 == prog_args->format_output) printf("%s\n", s);
-
+	if (echo_output) printf("%s\n", s);
 	line_len = strlen(s);
 	/* If the line has an "=" read the tag in the right place */
 	if ((n=strchr(s,'=')) == NULL) {
@@ -155,7 +160,7 @@ read_record(const program_args *prog_args,
 	    pr_append_new_chunk(glob_err, "Input line with no '=': ");
 	    pr_append(glob_err, s);
 	} else {
-        /* Get the tag and the value pointers */
+	    /* Get the tag and the value pointers */
 	    tag_len = n - s;
 	    datum = n + 1;
 	    datum_len = line_len - tag_len - 1;
@@ -166,20 +171,20 @@ read_record(const program_args *prog_args,
 	    /* COMPARE_AND_MALLOC("SEQUENCE", sa->sequence); */
 	    if (COMPARE("SEQUENCE")) {   /* NEW WAY */
 	      if (/* p3_get_seq_arg_sequence(sa) */ sa->sequence) {
-	    	pr_append_new_chunk(parse_err, "Duplicate tag: ");
-	    	pr_append(parse_err, "SEQUENCE"); 
+		    pr_append_new_chunk(parse_err, "Duplicate tag: ");
+		    pr_append(parse_err, "SEQUENCE"); 
 	      } else {
-			/* p3_set_seq_arg_sequence */
-			if (p3_set_seq_args_sequence(sa, datum)) exit(-2);
+		    /* p3_set_seq_arg_sequence */
+		    if (p3_set_seq_args_sequence(sa, datum)) exit(-2);
 	      }
 	      continue;
 	    }
 
 	    if (COMPARE("PRIMER_SEQUENCE_QUALITY")) {
 	       if ((sa->n_quality = parse_seq_quality(datum, &sa->quality)) == 0) {
-			 pr_append_new_chunk(parse_err, /*&sa->error, */ 
-					     "Error in sequence quality data");
-			 continue;  /* FIX ME superfluous ? */
+		     pr_append_new_chunk(parse_err, /*&sa->error, */ 
+				     "Error in sequence quality data");
+		     continue;  /* FIX ME superfluous ? */
            }
 	       continue;
         }
@@ -190,22 +195,25 @@ read_record(const program_args *prog_args,
             COMPARE_AND_MALLOC("PRIMER_RIGHT_INPUT", sa->right_input);
             COMPARE_AND_MALLOC("PRIMER_INTERNAL_OLIGO_INPUT", sa->internal_input);
 
-	    COMPARE_INTERVAL_LIST("TARGET", sa->num_targets, sa->tar) ;
-	    COMPARE_INTERVAL_LIST("EXCLUDED_REGION", sa->num_excl,
-				  sa->excl);
+	    COMPARE_INTERVAL_LIST("TARGET", &sa->tar2);
+	    COMPARE_INTERVAL_LIST("EXCLUDED_REGION", &sa->excl2);
 	    COMPARE_INTERVAL_LIST("PRIMER_INTERNAL_OLIGO_EXCLUDED_REGION",
-				   sa->num_internal_excl,  
-				   sa->excl_internal);
+				  &sa->excl_internal2);
+
 	    if (COMPARE("INCLUDED_REGION")) {
-			p = parse_int_pair("INCLUDED_REGION", datum, ',',
-					   &sa->incl_s, &sa->incl_l, parse_err);
-			if (NULL == p) /* An error; the message is already in parse_err. */
-			  continue;
-	
-			while (' ' == *p || '\t' == *p) p++;
-			if (*p != '\n' && *p != '\0')
-			    tag_syntax_error("INCLUDED_REGION", datum, parse_err);
-			continue;
+		    p = parse_int_pair("INCLUDED_REGION", datum, ',',
+				   &sa->incl_s, &sa->incl_l, parse_err);
+		    if (NULL == p) /* 
+                                * An error; the message is already
+                                * in parse_err.
+                                */
+		        continue;
+
+		    while (' ' == *p || '\t' == *p) p++;
+		    if (*p != '\n' && *p != '\0')
+		       tag_syntax_error("INCLUDED_REGION", datum,
+				     parse_err);
+		    continue;
 	    }
 
 	    COMPARE_INT("PRIMER_START_CODON_POSITION", sa->start_codon_pos);
@@ -217,9 +225,9 @@ read_record(const program_args *prog_args,
 	    parse_err = glob_err;  /* These errors are considered fatal. */
 	    if (COMPARE("PRIMER_PRODUCT_SIZE_RANGE")
 		|| COMPARE("PRIMER_DEFAULT_PRODUCT")) {
-			parse_product_size("PRIMER_PRODUCT_SIZE_RANGE", datum, pa,
-					   parse_err);
-			continue;
+		    parse_product_size("PRIMER_PRODUCT_SIZE_RANGE", datum, pa,
+				   parse_err);
+		    continue;
 	    }
 	    COMPARE_INT("PRIMER_DEFAULT_SIZE", pa->p_args.opt_size);
 	    COMPARE_INT("PRIMER_OPT_SIZE", pa->p_args.opt_size);
@@ -272,7 +280,7 @@ read_record(const program_args *prog_args,
 
 	    COMPARE_AND_MALLOC("PRIMER_TASK", task_tmp);
 
-	    if (0 < prog_args->io_version) {
+	    if (0 < *io_version) {
 		    COMPARE_INT("PRIMER_PICK_RIGHT_PRIMER", pa->pick_right_primer);
 		    COMPARE_INT("PRIMER_PICK_INTERNAL_OLIGO", pa->pick_internal_oligo);
 		    COMPARE_INT("PRIMER_PICK_LEFT_PRIMER", pa->pick_left_primer);
@@ -424,7 +432,7 @@ read_record(const program_args *prog_args,
 	/* End of reading the tags in the right place */
 	
 	/*  Complain about unrecognized tags */
-	if (1 == prog_args->strict_tags) {
+	if (*strict_tags == 1) {
 	    pr_append_new_chunk(glob_err, "Unrecognized tag: ");
 	    pr_append(glob_err, s);
 	    fprintf(stderr, "Unrecognized tag: %s\n", s);
@@ -433,21 +441,21 @@ read_record(const program_args *prog_args,
 
     /* Check if the record was terminated by "=" */
     if (NULL == s) { /* End of file. */
-		if (data_found) {
-		    pr_append_new_chunk(glob_err, 
-					"Final record not terminated by '='");
-		    return 1;
-		} else return 0;
+	    if (data_found) {
+	        pr_append_new_chunk(glob_err, 
+			    	"Final record not terminated by '='");
+	        return 1;
+	    } else return 0;
     }
     
     /* Figure out the right settings for the tasks*/
     /* AU: modified to be able to use task in the new way */
-    if (0 == prog_args->io_version) {
+    if (0 == *io_version) {
     	/*here primer_task for all should be: pick_detection_primers; */
 	    if (task_tmp != NULL) {
-	      pa->pick_left_primer = 0;
-	      pa->pick_right_primer = 0;
-	      pa->pick_internal_oligo = 0;
+	        pa->pick_left_primer = 0;
+	        pa->pick_right_primer = 0;
+	        pa->pick_internal_oligo = 0;
 	    if (!strcmp_nocase(task_tmp, "pick_pcr_primers")) {
 			pa->primer_task = pick_pcr_primers;
 			pa->pick_left_primer = 1;
@@ -528,56 +536,81 @@ read_record(const program_args *prog_args,
     if (NULL != repeat_file_path) {
       destroy_seq_lib(pa->p_args.repeat_lib);
       if ('\0' == *repeat_file_path) {
-		/* Input now specifies no repeat library. */
-		pa->p_args.repeat_lib = NULL;
+	    /* Input now specifies no repeat library. */
+	    pa->p_args.repeat_lib = NULL;
       }
       else {
-		pa->p_args.repeat_lib
-		  = read_and_create_seq_lib(repeat_file_path, 
-					    "mispriming library");
-		if(pa->p_args.repeat_lib->error.data != NULL) {
-		  pr_append_new_chunk(glob_err, pa->p_args.repeat_lib->error.data);
+	    pa->p_args.repeat_lib
+	      = read_and_create_seq_lib(repeat_file_path, 
+				    "mispriming library");
+	    if(pa->p_args.repeat_lib->error.data != NULL) {
+	      pr_append_new_chunk(glob_err, pa->p_args.repeat_lib->error.data);
 	}
       }
       free(repeat_file_path);
       repeat_file_path = NULL;
     }
-    
+
     /* Reading in the repeat libraries for internal oligo */
     if (NULL != int_repeat_file_path) {
       destroy_seq_lib(pa->o_args.repeat_lib);
       if ('\0' == *int_repeat_file_path) {
-		/* Input now specifies no mishybridization library. */
-		pa->o_args.repeat_lib = NULL;
+	    /* Input now specifies no mishybridization library. */
+	    pa->o_args.repeat_lib = NULL;
       }
       else {
-		pa->o_args.repeat_lib = 
-		read_and_create_seq_lib(int_repeat_file_path,
+	    pa->o_args.repeat_lib = 
+	    read_and_create_seq_lib(int_repeat_file_path,
 				  "internal oligo mishyb library");
-		if(pa->o_args.repeat_lib->error.data != NULL) {
-		  pr_append_new_chunk(glob_err, pa->o_args.repeat_lib->error.data);
-		}
-	  }
+	    if(pa->o_args.repeat_lib->error.data != NULL) {
+	       pr_append_new_chunk(glob_err, pa->o_args.repeat_lib->error.data);
+	    }
+      }
       free(int_repeat_file_path);
       int_repeat_file_path = NULL;
     }
     
+
     /* Fix very old tags for backward compatibility */
-    if (0 == prog_args->io_version) {
-		/* This next belongs here rather than libprimer3, because it deals
-		   with potential incompatibility with old tags (kept for backward
-		   compatibility, and new tags.  */
-		if((pick_internal_oligo == 1 || pick_internal_oligo == 0) &&
-		   (pa->primer_task == pick_left_only || 
-		pa->primer_task == pick_right_only ||
-		pa->primer_task == pick_hyb_probe_only)) 
-		  pr_append_new_chunk(glob_err, 
-		    "Contradiction in primer_task definition");
-		else if (pick_internal_oligo == 1) 
-		  pa->primer_task = 1;
-		else if (pick_internal_oligo == 0) pa->primer_task = 0;
+    if (0 == *io_version) {
+      /* This next belongs here rather than libprimer3, because it deals
+	 with potential incompatibility with old tags (kept for backward
+	 compatibility, and new tags.  */
+      if (pa->primer_task == pick_pcr_primers_and_hyb_probe) {
+	PR_ASSERT(pa->pick_internal_oligo);
+      }
+
+      if((pick_internal_oligo == 1 || pick_internal_oligo == 0) &&
+	 (pa->primer_task == pick_left_only || 
+	  pa->primer_task == pick_right_only ||
+	  pa->primer_task == pick_hyb_probe_only)) {
+	pr_append_new_chunk(glob_err, 
+			    "Contradiction in primer_task definition");
+      if (pa->primer_task == pick_pcr_primers_and_hyb_probe) {
+	PR_ASSERT(pa->pick_internal_oligo);
+      }
+      } else if (pick_internal_oligo == 1) {
+	pa->primer_task = pick_pcr_primers_and_hyb_probe;
+	pa->pick_internal_oligo = 1;
+	if (pa->primer_task == pick_pcr_primers_and_hyb_probe) {
+	  PR_ASSERT(pa->pick_internal_oligo);
+	}
+      } else if (pick_internal_oligo == 0) {
+	pa->primer_task = 0;
+	if (pa->primer_task == pick_pcr_primers_and_hyb_probe) {
+	  PR_ASSERT(pa->pick_internal_oligo);
+	}
+      }
+      if (pa->primer_task == pick_pcr_primers_and_hyb_probe) {
+	PR_ASSERT(pa->pick_internal_oligo);
+      }
+
     }
 		
+    if (pa->primer_task == pick_pcr_primers_and_hyb_probe) {
+      PR_ASSERT(pa->pick_internal_oligo);
+    }
+
     return 1;
 }
 #undef COMPARE
@@ -687,7 +720,6 @@ parse_int_pair(tag_name, datum, sep, out1, out2, err)
     long tlong;
     tlong = strtol(datum, &nptr, 10);
     if (tlong > INT_MAX || tlong < INT_MIN) {
-      /* NOT sure? -> libprimer3.c */
 	tag_syntax_error(tag_name, datum, err);
 	pr_append(err, " (value too large or too small)");
 	return NULL;
@@ -730,29 +762,24 @@ parse_int_pair(tag_name, datum, sep, out1, out2, err)
 }
 
 static void
-parse_interval_list(tag_name, datum, count, interval_array, err)
-    const char *tag_name;
-    const char *datum;
-    int *count;
-    interval_array_t interval_array;
-    pr_append_str *err;
+parse_interval_list(const char *tag_name,
+		    const char *datum,
+		    interval_array_t2 *interval_arr,
+		    pr_append_str *err)
 {
-    const char *p = datum;
-    while (' ' == *p || '\t' == *p) p++;
-    while (*p != '\0' && *p != '\n') {
-	if (*count >= PR_MAX_INTERVAL_ARRAY) {
-	  /* ? -> libprimer3.c */
-	    pr_append_new_chunk(err, "Too many elements for tag ");
-	    pr_append(err, tag_name);
-	    return;
-	}
-	p = parse_int_pair(tag_name, p, ',', 
-			   &interval_array[*count][0],
-			   &interval_array[*count][1],
-			   err);
-	if (NULL == p) return;
-	(*count)++;
+  const char *p = datum;
+  int i1, i2;
+  int ret = 0;
+  while (' ' == *p || '\t' == *p) p++;
+  while (*p != '\0' && *p != '\n') {
+    p = parse_int_pair(tag_name, p, ',', &i1, &i2, err);
+    if (NULL == p) return;
+    ret = p3_add_to_interval_array(interval_arr, i1, i2);
+    if (ret) {
+      pr_append_new_chunk(err, "Too many elements for tag ");
+      pr_append(err, tag_name);
     }
+  }
 }
 
 static void
@@ -833,7 +860,7 @@ parse_seq_quality(s, num)
 }
 
 /* =========================================================== */
-/* Fail-stop wrappers for memory allocation.                   */
+/* Fail-stop wrapper for memory allocation.                    */
 /* =========================================================== */
 /* 
  * Panic messages for when the program runs out of memory.

@@ -46,8 +46,8 @@ static void   print_explain(const oligo_stats *, oligo_type);
 
 /* Print the data for chosen primer pairs to stdout in "boulderio" format. */
 void
-boulder_print(prog_args, pa, sa, retval)
-    const program_args *prog_args;
+boulder_print(io_version, pa, sa, retval)
+    const int *io_version;
     const primer_args *pa;
     const seq_args *sa;
     const p3retval *retval;
@@ -80,7 +80,7 @@ boulder_print(prog_args, pa, sa, retval)
     /* Check: are all pointers linked to something*/
     PR_ASSERT(NULL != pa);
     PR_ASSERT(NULL != sa);
-    PR_ASSERT(NULL != prog_args);
+    PR_ASSERT(NULL != io_version);
 
     /* Check if there are warnings and print them */
     if ((warning = pr_gather_warnings(sa, pa)) != NULL) { 
@@ -182,7 +182,7 @@ boulder_print(prog_args, pa, sa, retval)
       }
       
 	/* Get the number for pimer counting in suffix[0] */
-	if ((i == 0) && (prog_args->io_version < 1) ){
+	if ((i == 0) && (*io_version < 1) ){
 	  suffix[0] = '\0';
 	} else { 
 	  sprintf(suffix, "_%d", i);
@@ -190,7 +190,7 @@ boulder_print(prog_args, pa, sa, retval)
 
 	/* Print out the Pair Penalties */
 	if (retval->output_type == primer_pairs) {
-	  if (prog_args->io_version < 1) {
+	  if (*io_version < 1) {
 	  	printf("PRIMER_PAIR_PENALTY%s=%.4f\n", suffix,
 				retval->best_pairs.pairs[i].pair_quality);
 	  } else {
@@ -199,7 +199,7 @@ boulder_print(prog_args, pa, sa, retval)
 	  }
 	}
 	/* Print single primer penalty */
-	if (go_fwd == 1)  /* FIX ME: should it be ...PENALTY=%.4f\n", ?? I think not. */
+	if (go_fwd == 1)
 	  printf("PRIMER_LEFT%s_PENALTY=%f\n", suffix, fwd->quality);
 	if (go_rev == 1)
 	  printf("PRIMER_RIGHT%s_PENALTY=%f\n", suffix, rev->quality);
