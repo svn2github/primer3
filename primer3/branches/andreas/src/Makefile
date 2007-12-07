@@ -79,7 +79,8 @@ RANLIB          = ranlib
 PRIMER_OBJECTS1=primer3_boulder_main.o\
                 format_output.o\
                 read_boulder.o\
-                print_boulder.o
+                print_boulder.o\
+                io_primer_files.o
 
 PRIMER_OBJECTS=$(PRIMER_OBJECTS1) $(LIBRARIES)
 PRIMER_DYN_OBJECTS=$(PRIMER_OBJECTS1) $(DYNLIBS)
@@ -120,7 +121,7 @@ $(LIBPRIMER3_DYN): libprimer3.o
 $(PRIMER_EXE): $(PRIMER_OBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $(PRIMER_OBJECTS) $(LIBOPTS) $(LDLIBS)
 
-libprimer3.o: libprimer3.c libprimer3.h dpal.h oligotm.h
+libprimer3.o: libprimer3.c libprimer3.h dpal.h oligotm.h io_primer_files.h
 	$(CC) -c $(CFLAGS) $(P_DEFINES) -o $@ libprimer3.c
 
 ntdpal: ntdpal_main.o dpal.o
@@ -143,6 +144,9 @@ dpal.o: dpal.c dpal.h
 
 dpal_primer.o: dpal.c dpal.h
 	$(CC) -c $(CFLAGS) $(P_DEFINES) -o $@ dpal.c
+
+io_primer_files.o: io_primer_files.c io_primer_files.h libprimer3.h
+	$(CC) -c $(CFLAGS) $(P_DEFINES) -o $@ io_primer_files.c
 
 format_output.o: format_output.c format_output.h libprimer3.h dpal.h
 	$(CC) -c $(CFLAGS) $(P_DEFINES) -o $@ format_output.c
