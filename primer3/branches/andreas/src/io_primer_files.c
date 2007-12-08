@@ -40,7 +40,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <signal.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <setjmp.h>
 
 #include "io_primer_files.h"
 #include "libprimer3.h"
@@ -54,9 +53,6 @@ static int    p3_print_one_oligo_list(const seq_args *,
 static int    print_list_header(FILE *, oligo_type, int, int);
 static int    print_oligo(FILE *, const seq_args *, int, const primer_rec *,
 			  oligo_type, int, int);
-static void*  pr_safe_malloc(size_t x);
-
-static jmp_buf _jmp_buf;
 
 /* return 0 on success, 1 on error */
 /* This function is for backward compatability
@@ -71,7 +67,8 @@ p3_print_oligo_lists(const p3retval *retval,
     int   first_base_index = pa->first_base_index;
     int   ret;
     /* Start building up a filename */
-    char *file = pr_safe_malloc(strlen(sa->sequence_name) + 5);
+    char *file = malloc(strlen(sa->sequence_name) + 5);
+    if (NULL == file) return 1; 
     FILE *fh;
 
     /* Check if the left primers have to be printed */
@@ -247,17 +244,3 @@ print_oligo(FILE *fh,
     else return 0;
 }
 
-
-/* =========================================================== */
-/* Malloc and realloc wrappers that longjmp() on failure       */
-/* =========================================================== */
-static void *
-pr_safe_malloc(size_t x)
-{
-    void *r = malloc(x);
-    if (NULL == r) longjmp(_jmp_buf, 1);
-    return r;
-}
-
-/* End of malloc/realloc wrappers. */
-/* =========================================================== */
