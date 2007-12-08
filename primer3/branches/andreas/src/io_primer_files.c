@@ -36,11 +36,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <stdio.h>
 #include <string.h>
+
 #include <signal.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <math.h>
-#include <float.h>
 #include <setjmp.h>
 
 #include "io_primer_files.h"

@@ -43,6 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "libprimer3.h"
 #include "read_boulder.h"
 #include "print_boulder.h"
+#include "io_primer_files.h"
 
 /* Some global variables */
 static void   print_usage();
@@ -190,6 +191,13 @@ main(argc,argv)
 
     retval = choose_primers(global_pa, sa);
     if (NULL == retval) exit(-2); /* Out of memory. */
+    
+    /* Creates files with left, right, and internal oligos. */
+    if (global_pa->file_flag) {
+       p3_print_oligo_lists(retval, sa, global_pa,
+    			   &retval->per_sequence_err); 
+    }
+    
 
     /* If there are errors, write the proper message
      * and finish this loop */

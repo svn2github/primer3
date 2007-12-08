@@ -47,8 +47,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dpal.h"
 #include "oligotm.h"
 #include "libprimer3.h"
-/* For now it still here - but it should go to main */
-#include "io_primer_files.h"
 
 /* #define's */
 
@@ -845,14 +843,6 @@ choose_primers(const p3_global_settings *pa,
 				   dpal_arg_to_use) != 0) {
 	/* There was an error*/ return retval;
       }
-    }
-
-    /* Creates files with left, right, and internal oligos. */
-    if (pa->file_flag) {
-      p3_print_oligo_lists(retval, sa, pa,
-			   &retval->per_sequence_err); 
-      /* FIX ME, add test for this behavior (or other
-	 behavior?) Move this to outside libprimer3. */
     }
 
     /* We sort _after_ printing lists to 
