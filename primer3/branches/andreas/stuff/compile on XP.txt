@@ -1,4 +1,4 @@
-cd z_programming\primer3_andreas\src
+cd z_programming\primer3_Steve\src
 
 mingw32-make -f makefile
 
