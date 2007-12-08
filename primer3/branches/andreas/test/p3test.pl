@@ -215,19 +215,19 @@ sub main() {
 	}
 
 	unless ($r == 0) {
-	    print "NON-0 EXIT: $r\n";
+	    print "NON-0 EXIT: $r {FAILED]\n";
 	    $exit_stat = -1;
 	    next;
 	}
 
 	$r = perldiff $output, $tmp;
-
 	if ($r == 0) {
 	    print "[OK]\n";
 	} else {
 	    print "[FAILED]\n";
 	    $exit_stat = -1;
 	}
+
 	if ($test eq 'primer' || $test eq 'primer1') {
 	    my $list_tmp = $test.'_list_tmp';
 	    my $list_last = $test.'_list_last';
@@ -239,7 +239,9 @@ sub main() {
 		# primer_list_last/filename_within_primer_list_last
 		my $regex = "[^/]+/";
 		$t=~ s/$regex//g;
-		$r = perldiff $list_tmp."/".$t, $list_last."/".$t;
+		if (perldiff $list_tmp."/".$t, $list_last."/".$t) {
+		    $r = 1;
+		}
 	    }
 	    print $test. "_list_files...";
 	    if ($r == 0) {
