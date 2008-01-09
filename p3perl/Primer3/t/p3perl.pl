@@ -1,3 +1,7 @@
+
+#### DO NOT WORK IN THIS FILE, use primer3/trunk/test/p3core.pl instead
+#### FIX ME -- unify testing for perl ???? 
+
 use warnings 'all';
 use strict;
 
