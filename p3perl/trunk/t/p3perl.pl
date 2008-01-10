@@ -52,6 +52,7 @@ mylabel:
     while (<>) {
 	$i = 1 ;
 	$rec = $_;
+	print $rec;
 	chomp $rec ;
 	if ($rec eq "=") {
 	    goto mylabel;
