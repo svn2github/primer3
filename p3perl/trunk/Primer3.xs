@@ -498,7 +498,7 @@ pl_set_gs_primer_salt_corrections(p , salt_corrections)
 void 
 pl_set_gs_primer_min_gc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -510,7 +510,7 @@ pl_set_gs_primer_min_gc(p , val)
 void 
 pl_set_gs_primer_max_gc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -522,7 +522,7 @@ pl_set_gs_primer_max_gc(p , val)
 void 
 pl_set_gs_primer_salt_conc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -534,7 +534,7 @@ pl_set_gs_primer_salt_conc(p , val)
 void 
 pl_set_gs_primer_divalent_conc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -546,7 +546,7 @@ pl_set_gs_primer_divalent_conc(p , val)
 void 
 pl_set_gs_primer_dntp_conc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -558,7 +558,7 @@ pl_set_gs_primer_dntp_conc(p , val)
 void 
 pl_set_gs_primer_dna_conc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -750,7 +750,7 @@ pl_set_gs_primer_quality_range_max(p , val)
 void 
 pl_set_gs_primer_product_max_tm(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -762,7 +762,7 @@ pl_set_gs_primer_product_max_tm(p , val)
 void 
 pl_set_gs_primer_product_min_tm(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -774,7 +774,7 @@ pl_set_gs_primer_product_min_tm(p , val)
 void 
 pl_set_gs_primer_product_opt_tm(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -906,7 +906,7 @@ pl_set_gs_primer_internal_oligo_opt_gc_percent(p , val)
 void 
 pl_set_gs_primer_internal_oligo_max_tm(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -918,7 +918,7 @@ pl_set_gs_primer_internal_oligo_max_tm(p , val)
 void 
 pl_set_gs_primer_internal_oligo_min_tm(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -930,7 +930,7 @@ pl_set_gs_primer_internal_oligo_min_tm(p , val)
 void 
 pl_set_gs_primer_internal_oligo_min_gc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -942,7 +942,7 @@ pl_set_gs_primer_internal_oligo_min_gc(p , val)
 void 
 pl_set_gs_primer_internal_oligo_max_gc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -954,7 +954,7 @@ pl_set_gs_primer_internal_oligo_max_gc(p , val)
 void 
 pl_set_gs_primer_internal_oligo_salt_conc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -966,7 +966,7 @@ pl_set_gs_primer_internal_oligo_salt_conc(p , val)
 void 
 pl_set_gs_primer_internal_oligo_divalent_conc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -978,7 +978,7 @@ pl_set_gs_primer_internal_oligo_divalent_conc(p , val)
 void 
 pl_set_gs_primer_internal_oligo_dntp_conc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -990,7 +990,7 @@ pl_set_gs_primer_internal_oligo_dntp_conc(p , val)
 void 
 pl_set_gs_primer_internal_oligo_dna_conc(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1121,7 +1121,7 @@ pl_set_gs_primer_lib_ambiguity_codes_consensus(p , val)
 void 
 pl_set_gs_primer_inside_penalty(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1194,7 +1194,7 @@ pl_set_gs_primer_lowercase_masking(p , val)
 void 
 pl_set_gs_primer_wt_tm_gt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1206,7 +1206,7 @@ pl_set_gs_primer_wt_tm_gt(p , val)
 void 
 pl_set_gs_primer_wt_tm_lt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1218,7 +1218,7 @@ pl_set_gs_primer_wt_tm_lt(p , val)
 void 
 pl_set_gs_primer_wt_gc_percent_gt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1230,7 +1230,7 @@ pl_set_gs_primer_wt_gc_percent_gt(p , val)
 void 
 pl_set_gs_primer_wt_gc_percent_lt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1242,7 +1242,7 @@ pl_set_gs_primer_wt_gc_percent_lt(p , val)
 void 
 pl_set_gs_primer_wt_size_lt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1254,7 +1254,7 @@ pl_set_gs_primer_wt_size_lt(p , val)
 void 
 pl_set_gs_primer_wt_size_gt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1266,7 +1266,7 @@ pl_set_gs_primer_wt_size_gt(p , val)
 void 
 pl_set_gs_primer_wt_comp_any(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1278,7 +1278,7 @@ pl_set_gs_primer_wt_comp_any(p , val)
 void 
 pl_set_gs_primer_wt_compl_end(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 	CODE:
 
@@ -1300,7 +1300,7 @@ pl_set_gs_primer_wt_num_ns(p , val)
 void 
 pl_set_gs_primer_wt_rep_sim(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 	CODE:
 
@@ -1311,7 +1311,7 @@ pl_set_gs_primer_wt_rep_sim(p , val)
 void 
 pl_set_gs_primer_wt_seq_qual(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1323,7 +1323,7 @@ pl_set_gs_primer_wt_seq_qual(p , val)
 void 
 pl_set_gs_primer_wt_end_qual(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1335,7 +1335,7 @@ pl_set_gs_primer_wt_end_qual(p , val)
 void 
 pl_set_gs_primer_wt_pos_penalty(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1347,7 +1347,7 @@ pl_set_gs_primer_wt_pos_penalty(p , val)
 void 
 pl_set_gs_primer_wt_end_stability(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1359,7 +1359,7 @@ pl_set_gs_primer_wt_end_stability(p , val)
 void 
 pl_set_gs_primer_wt_template_mispriming(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1371,7 +1371,7 @@ pl_set_gs_primer_wt_template_mispriming(p , val)
 void 
 pl_set_gs_primer_io_wt_tm_gt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1383,7 +1383,7 @@ pl_set_gs_primer_io_wt_tm_gt(p , val)
 void 
 pl_set_gs_primer_io_wt_tm_lt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1395,7 +1395,7 @@ pl_set_gs_primer_io_wt_tm_lt(p , val)
 void 
 pl_set_gs_primer_io_wt_gc_percent_gt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1407,7 +1407,7 @@ pl_set_gs_primer_io_wt_gc_percent_gt(p , val)
 void 
 pl_set_gs_primer_io_wt_gc_percent_lt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1419,7 +1419,7 @@ pl_set_gs_primer_io_wt_gc_percent_lt(p , val)
 void 
 pl_set_gs_primer_io_wt_size_lt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1431,7 +1431,7 @@ pl_set_gs_primer_io_wt_size_lt(p , val)
 void 
 pl_set_gs_primer_io_wt_size_gt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1443,7 +1443,7 @@ pl_set_gs_primer_io_wt_size_gt(p , val)
 void 
 pl_set_gs_primer_io_wt_compl_any(p , val)	
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1456,7 +1456,7 @@ pl_set_gs_primer_io_wt_compl_any(p , val)
 void 
 pl_set_gs_primer_io_wt_compl_end(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1468,7 +1468,7 @@ pl_set_gs_primer_io_wt_compl_end(p , val)
 void 
 pl_set_gs_primer_io_wt_num_ns(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1480,7 +1480,7 @@ pl_set_gs_primer_io_wt_num_ns(p , val)
 void 
 pl_set_gs_primer_io_wt_rep_sim(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1492,7 +1492,7 @@ pl_set_gs_primer_io_wt_rep_sim(p , val)
 void 
 pl_set_gs_primer_io_wt_seq_qual(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1504,7 +1504,7 @@ pl_set_gs_primer_io_wt_seq_qual(p , val)
 void 
 pl_set_gs_primer_io_wt_end_qual(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1516,7 +1516,7 @@ pl_set_gs_primer_io_wt_end_qual(p , val)
 void 
 pl_set_gs_primer_io_wt_template_mishyb(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1528,7 +1528,7 @@ pl_set_gs_primer_io_wt_template_mishyb(p , val)
 void 
 pl_set_gs_primer_pair_wt_pr_penalty(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1540,7 +1540,7 @@ pl_set_gs_primer_pair_wt_pr_penalty(p , val)
 void 
 pl_set_gs_primer_pair_wt_io_penalty(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1552,7 +1552,7 @@ pl_set_gs_primer_pair_wt_io_penalty(p , val)
 void 
 pl_set_gs_primer_pair_wt_diff_tm(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1564,7 +1564,7 @@ pl_set_gs_primer_pair_wt_diff_tm(p , val)
 void 
 pl_set_gs_primer_pair_wt_compl_any(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1576,7 +1576,7 @@ pl_set_gs_primer_pair_wt_compl_any(p , val)
 void 
 pl_set_gs_primer_pair_wt_compl_end(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1588,7 +1588,7 @@ pl_set_gs_primer_pair_wt_compl_end(p , val)
 void 
 pl_set_gs_primer_pair_wt_product_tm_lt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1600,7 +1600,7 @@ pl_set_gs_primer_pair_wt_product_tm_lt(p , val)
 void 
 pl_set_gs_primer_pair_wt_product_tm_gt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1612,7 +1612,7 @@ pl_set_gs_primer_pair_wt_product_tm_gt(p , val)
 void 
 pl_set_gs_primer_pair_wt_product_size_gt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1624,7 +1624,7 @@ pl_set_gs_primer_pair_wt_product_size_gt(p , val)
 void 
 pl_set_gs_primer_pair_wt_product_size_lt(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1636,7 +1636,7 @@ pl_set_gs_primer_pair_wt_product_size_lt(p , val)
 void 
 pl_set_gs_primer_pair_wt_rep_sim(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1648,7 +1648,7 @@ pl_set_gs_primer_pair_wt_rep_sim(p , val)
 void 
 pl_set_gs_primer_pair_wt_template_mispriming(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 	CODE:
 
