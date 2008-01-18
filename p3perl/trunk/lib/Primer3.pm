@@ -170,18 +170,29 @@ __END__
 
 =head1 NAME
 
-Primer3 - Perl extension for blah blah blah
+Primer3 - Perl extension to call libprimer3.  See http://primer3.sourceforge.net/
 
 =head1 SYNOPSIS
 
-  use Primer3;
-  blah blah blah
+  use Primer3 ':all';
+
+  my $global_settings = pl_create_global_settings();
+
+  # Call functions to override defaults in $global_settings,
+  # for example,
+
+  
+
+
+
+  my $retval = XXXXXX_choose_primers($global_settings,
+                                     $per_sequence_arguments);
+
+
 
 =head1 DESCRIPTION
 
-Stub documentation for Primer3, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
+
 
 Blah blah blah.
 
