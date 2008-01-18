@@ -34,6 +34,19 @@ pl_create_global_settings()
        	OUTPUT:
 	RETVAL
 	
+UV
+pl_create_p3retval()
+
+	CODE:
+	
+	p3retval * p ;
+	
+	p = create_p3retval() ;
+	
+	RETVAL = (UV) p ;
+       	OUTPUT:
+	RETVAL
+	
 void 
 pl_destroy_p3retval(s)
 	UV s ;
