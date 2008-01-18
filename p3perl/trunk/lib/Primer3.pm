@@ -16,6 +16,8 @@ our @ISA = qw(Exporter);
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
+pl_create_p3retval
+pl_destroy_p3retval
 pl_add_to_gs_product_size_range
 pl_add_to_sa_excl2
 pl_add_to_sa_excl_internal2
