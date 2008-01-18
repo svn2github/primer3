@@ -25,6 +25,7 @@ pl_add_to_sa_tar2
 pl_boulder_print
 pl_choose_primers
 pl_create_global_settings
+pl_destroy_global_settings
 pl_create_seq_arg	
 pl_destroy_seq_args
 pl_empty_gs_product_size_range
