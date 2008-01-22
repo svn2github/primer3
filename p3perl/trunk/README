@@ -3,12 +3,11 @@ Primer3.pm development
 
 HOW TO BUILD
 
-1. Make sure the necessary C code is in p3ccode/, for
-   example:
+1. Make sure the necessary C code is in p3ccode/. 
+   Usually during development you can you the
+   getcode.pl in this directory:
 
-   cd p3ccode
-   cp ../../primer3/trunk/src/*.[ch] .  # Actually you do not need _all_ the files.
-
+   perl getcode.pl
 
 2. make clean
    perl Makefile.PL
