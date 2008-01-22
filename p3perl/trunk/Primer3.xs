@@ -1170,7 +1170,7 @@ pl_set_gs_primer_internal_oligo_mishyb_library(p , val)
 void 
 pl_set_gs_primer_max_end_stability(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
