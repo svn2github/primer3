@@ -41,7 +41,7 @@ pl_create_p3retval()
 	
 	p3retval * p ;
 	
-	p = create_p3retval() ;
+	p = (p3retval*) create_p3retval() ;
 	
 	RETVAL = (UV) p ;
        	OUTPUT:
@@ -1670,17 +1670,16 @@ pl_set_gs_primer_pair_wt_template_mispriming(p , val)
        	OUTPUT:
 
 void 
-pl_boulder_print(pa, sa, retval)
-	UV pa ;
+pl_boulder_print(gs, sa, retval)
+	UV gs ;
 	UV sa ;
 	UV retval ;
 	
 	CODE:
 
 	int  jj ;
-	pr_append_str ww ;
 	jj = 0 ;
-	boulder_print(&jj, (const primer_args *)pa, (const seq_args *)sa, (const p3retval *)retval) ;
+	boulder_print(&jj, (p3_global_settings *) gs, (seq_args *) sa, (p3retval *) retval) ;
 
 	OUTPUT:
 
