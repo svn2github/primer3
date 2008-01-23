@@ -145,8 +145,8 @@ pl_set_sa_incl_l
 pl_set_sa_incl_s
 pl_set_sa_internal_input
 pl_set_sa_left_input
-pl_set_sa_n_quality
-pl_get_sa_n_quality
+pl_set_sa_empty_quality
+pl_sa_add_to_quality_array
 pl_set_sa_primer_opt_size
 pl_set_sa_right_input
 pl_set_sa_sequence

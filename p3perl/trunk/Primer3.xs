@@ -211,26 +211,26 @@ pl_set_sa_sequence(sargs, sequence)
 
 
 void
-pl_set_sa_n_quality(sargs, n_quality)
+pl_set_sa_empty_quality(sargs)
 	UV sargs;
-	int n_quality ;
+
+	CODE:
+
+	p3_set_sa_empty_quality((seq_args *)sargs) ;
+
+       	OUTPUT:
+
+void
+pl_sa_add_to_quality_array(sargs, n)
+	UV sargs;
+	int n ;
 
 
 	CODE:
 
-	p3_set_sa_n_quality((seq_args *)sargs, n_quality) ;
+	p3_sa_add_to_quality_array((seq_args *)sargs, n) ;
 
        	OUTPUT:
-
-int
-pl_get_sa_n_quality(sa)
-	UV sa ;
-
-	CODE:
-
-	RETVAL = p3_get_sa_n_quality((seq_args *)sa) ;
-       	OUTPUT:
-	RETVAL
 
 	
 int
