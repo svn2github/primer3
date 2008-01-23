@@ -652,18 +652,6 @@ pl_set_gs_primer_gc_clamp(p , val)
        	OUTPUT:
 
 void 
-pl_set_gs_primer_explain_flag(p , val)
-	UV p ;
-	int val ;
-
-
-	CODE:
-
-	p3_set_gs_primer_explain_flag((p3_global_settings *) p, val) ;
-
-       	OUTPUT:
-
-void 
 pl_set_gs_primer_liberal_base(p , val)
 	UV p ;
 	int val ;
@@ -1657,16 +1645,17 @@ pl_set_gs_primer_pair_wt_template_mispriming(p , val)
        	OUTPUT:
 
 void 
-pl_boulder_print(gs, sa, retval)
+pl_boulder_print(gs, sa, retval, explain_flag)
 	UV gs ;
 	UV sa ;
 	UV retval ;
+	int explain_flag ;
 	
 	CODE:
 
 	int  jj ;
 	jj = 0 ;
-	boulder_print(&jj, (p3_global_settings *) gs, (seq_args *) sa, (p3retval *) retval) ;
+	print_boulder(&jj, (p3_global_settings *) gs, (seq_args *) sa, (p3retval *) retval, explain_flag) ;
 
 	OUTPUT:
 
