@@ -1252,7 +1252,7 @@ pl_set_gs_primer_wt_size_gt(p , val)
        	OUTPUT:
 
 void 
-pl_set_gs_primer_wt_comp_any(p , val)
+pl_set_gs_primer_wt_compl_any(p , val)
 	UV p ;
 	double val ;
 
@@ -1641,6 +1641,30 @@ pl_set_gs_primer_pair_wt_template_mispriming(p , val)
 	CODE:
 
 	p3_set_gs_primer_pair_wt_template_mispriming((p3_global_settings *) p, val) ;
+
+       	OUTPUT:
+
+void 
+pl_set_gs_prmin(p , val, i)
+	UV p ;
+	int val ;
+	int i ;
+
+	CODE:
+
+	p3_set_gs_prmin((p3_global_settings *) p, val, i) ;
+
+       	OUTPUT:
+
+void 
+pl_set_gs_prmax(p , val, i)
+	UV p ;
+	int val ;
+	int i ;
+
+	CODE:
+
+	p3_set_gs_prmax((p3_global_settings *) p, val, i) ;
 
        	OUTPUT:
 

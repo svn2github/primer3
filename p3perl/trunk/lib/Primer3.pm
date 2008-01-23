@@ -87,6 +87,7 @@ pl_set_gs_primer_min_quality
 pl_set_gs_primer_min_size
 pl_set_gs_primer_min_tm
 pl_set_gs_primer_mishyb_library
+pl_set_gs_primer_internal_oligo_mishyb_library
 pl_set_gs_primer_mispriming_library
 pl_set_gs_primer_num_ns_accepted
 pl_set_gs_primer_num_return
@@ -145,6 +146,7 @@ pl_set_sa_incl_s
 pl_set_sa_internal_input
 pl_set_sa_left_input
 pl_set_sa_n_quality
+pl_get_sa_n_quality
 pl_set_sa_primer_opt_size
 pl_set_sa_right_input
 pl_set_sa_sequence
