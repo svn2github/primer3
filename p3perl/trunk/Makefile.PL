@@ -48,6 +48,5 @@ else {
 sub MY::postamble {
 '
 $(MYEXTLIB): p3ccode/Makefile
-	perl getcode.pl; cd p3ccode && $(MAKE) $(PASSTHRU)
 ';
 }
