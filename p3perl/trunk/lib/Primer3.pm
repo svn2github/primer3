@@ -19,6 +19,12 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 pl_create_p3retval
 pl_destroy_p3retval
 pl_add_to_gs_product_size_range
+pl_get_rv_and_gs_warnings
+pl_get_rv_global_errors
+pl_get_rv_per_sequence_errors
+pl_get_rv_output_type
+pl_get_rv_warnings
+pl_get_rvstop_codon_pos
 pl_add_to_sa_excl2
 pl_add_to_sa_excl_internal2
 pl_add_to_sa_tar2

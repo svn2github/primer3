@@ -365,6 +365,66 @@ pl_add_to_gs_product_size_range(gs , min, max);
 	RETVAL
 
 
+const char * 
+pl_get_rv_and_gs_warnings(rv, gs)
+	UV rv ;
+	UV gs ;
+
+	CODE:
+	RETVAL = p3_get_rv_and_gs_warnings((p3retval *) rv, (p3_global_settings *) gs) ;
+	OUTPUT:
+	RETVAL
+
+const char *
+pl_get_rv_global_errors(rv)
+	UV rv ;
+
+	CODE:
+	RETVAL = p3_get_rv_global_errors((p3retval *) rv) ;
+	OUTPUT:
+	RETVAL
+
+
+const char *
+pl_get_rv_per_sequence_errors(rv)
+	UV rv ;
+
+	CODE:
+	RETVAL = p3_get_rv_per_sequence_errors((p3retval *) rv) ;
+	OUTPUT:
+	RETVAL
+
+
+int
+pl_get_rv_output_type(rv)
+	UV rv ;
+
+	CODE:
+	RETVAL = p3_get_rv_output_type((p3retval *) rv) ;
+	OUTPUT:
+	RETVAL
+
+
+const char *
+pl_get_rv_warnings(rv)
+	UV rv ;
+
+	CODE:
+	RETVAL = p3_get_rv_warnings((p3retval *) rv) ;
+	OUTPUT:
+	RETVAL
+
+
+int
+pl_get_rvstop_codon_pos(rv)
+	UV rv ;
+
+	CODE:
+	RETVAL = p3_get_rvstop_codon_pos((p3retval *) rv) ;
+	OUTPUT:
+	RETVAL
+
+
 void 
 pl_set_gs_primer_opt_size(p , val)
 	UV p ;
