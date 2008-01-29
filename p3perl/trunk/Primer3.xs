@@ -654,7 +654,7 @@ pl_set_gs_primer_product_opt_size(p , val) ;
 void 
 pl_set_gs_primer_self_any(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -666,7 +666,7 @@ pl_set_gs_primer_self_any(p , val)
 void 
 pl_set_gs_primer_self_end(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1073,7 +1073,7 @@ pl_set_gs_primer_internal_oligo_min_quality(p , val)
 void 
 pl_set_gs_primer_internal_oligo_self_any(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1085,7 +1085,7 @@ pl_set_gs_primer_internal_oligo_self_any(p , val)
 void 
 pl_set_gs_primer_internal_oligo_self_end(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1097,7 +1097,7 @@ pl_set_gs_primer_internal_oligo_self_end(p , val)
 void 
 pl_set_gs_primer_max_mispriming(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1109,7 +1109,7 @@ pl_set_gs_primer_max_mispriming(p , val)
 void 
 pl_set_gs_primer_max_template_mispriming(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1121,7 +1121,7 @@ pl_set_gs_primer_max_template_mispriming(p , val)
 void 
 pl_set_gs_primer_internal_oligo_max_mishyb(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1133,7 +1133,7 @@ pl_set_gs_primer_internal_oligo_max_mishyb(p , val)
 void 
 pl_set_gs_primer_pair_max_mispriming(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
@@ -1145,7 +1145,7 @@ pl_set_gs_primer_pair_max_mispriming(p , val)
 void 
 pl_set_gs_primer_internal_oligo_max_template_mishyb(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
