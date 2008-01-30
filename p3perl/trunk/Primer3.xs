@@ -420,7 +420,7 @@ pl_get_rvstop_codon_pos(rv)
 	UV rv ;
 
 	CODE:
-	RETVAL = p3_get_rvstop_codon_pos((p3retval *) rv) ;
+	RETVAL = p3_get_rv_stop_codon_pos((p3retval *) rv) ;
 	OUTPUT:
 	RETVAL
 
@@ -1739,7 +1739,7 @@ pl_boulder_print(gs, sa, retval, explain_flag)
 
 	int  jj ;
 	jj = 0 ;
-	print_boulder(&jj, (p3_global_settings *) gs, (seq_args *) sa, (p3retval *) retval, explain_flag) ;
+	print_boulder(&jj, (p3_global_settings *) gs, (seq_args *) sa, (p3retval *) retval, explain_flag, 1) ;
 
 	OUTPUT:
 
