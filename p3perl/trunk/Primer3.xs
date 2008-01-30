@@ -1729,17 +1729,18 @@ pl_set_gs_prmax(p , val, i)
        	OUTPUT:
 
 void 
-pl_boulder_print(gs, sa, retval, explain_flag)
+p3_print_boulder(gs, sa, retval, explain_flag, show_oligo_problems)
 	UV gs ;
 	UV sa ;
 	UV retval ;
 	int explain_flag ;
+	int show_oligo_problems ;
 	
 	CODE:
 
 	int  jj ;
 	jj = 0 ;
-	print_boulder(&jj, (p3_global_settings *) gs, (seq_args *) sa, (p3retval *) retval, explain_flag, 1) ;
+	print_boulder(&jj, (p3_global_settings *) gs, (seq_args *) sa, (p3retval *) retval, explain_flag, show_oligo_problems) ;
 
 	OUTPUT:
 

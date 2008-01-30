@@ -28,7 +28,7 @@ pl_get_rv_stop_codon_pos
 pl_add_to_sa_excl2
 pl_add_to_sa_excl_internal2
 pl_add_to_sa_tar2
-pl_boulder_print
+p3_print_boulder
 pl_choose_primers
 pl_create_global_settings
 pl_destroy_global_settings
