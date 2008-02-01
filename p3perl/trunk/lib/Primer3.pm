@@ -158,6 +158,7 @@ pl_set_sa_right_input
 pl_set_sa_sequence
 pl_set_sa_sequence_name
 pl_set_sa_start_codon_pos
+pl_print_args
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
