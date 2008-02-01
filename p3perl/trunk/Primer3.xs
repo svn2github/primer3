@@ -1745,15 +1745,13 @@ p3_print_boulder(gs, sa, retval, explain_flag, show_oligo_problems)
 	OUTPUT:
 
 void 
-pl_print_args(gs, sa)
+pl_set_dump(gs)
 	UV gs ;
-	UV sa ;
     
 	CODE:
 	p3_global_settings *p ;
 	p = (p3_global_settings *) gs ;
 	p->dump = 1 ;
-	p3_print_args((p3_global_settings *) gs, (seq_args *) sa) ;
 
 	OUTPUT:
 
