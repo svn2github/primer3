@@ -942,7 +942,7 @@ pl_set_gs_primer_internal_oligo_opt_tm(p , val)
 void 
 pl_set_gs_primer_internal_oligo_opt_gc_percent(p , val)
 	UV p ;
-	int val ;
+	double val ;
 
 
 	CODE:
