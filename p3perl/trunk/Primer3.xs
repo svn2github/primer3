@@ -424,6 +424,24 @@ pl_get_rvstop_codon_pos(rv)
 	OUTPUT:
 	RETVAL
 
+char *
+pl_get_pair_array_explain_string (pa);
+	UV pa ;
+
+	CODE:
+	RETVAL = (char *)p3_get_pair_array_explain_string((const pair_array_t *) pa);
+	OUTPUT:
+	RETVAL
+
+char *
+pl_get_oligo_array_explain_string(oa);
+	UV oa ;
+
+	CODE:
+	RETVAL = (char *)p3_get_oligo_array_explain_string((const oligo_array *) oa);
+	OUTPUT:
+	RETVAL
+
 
 void 
 pl_set_gs_primer_opt_size(p , val)
@@ -1740,7 +1758,7 @@ p3_print_boulder(gs, sa, retval, explain_flag, show_oligo_problems)
 
 	int  jj ;
 	jj = 0 ;
-	print_boulder(&jj, (p3_global_settings *) gs, (seq_args *) sa, (p3retval *) retval, explain_flag, show_oligo_problems) ;
+	print_boulder(jj, (p3_global_settings *) gs, (seq_args *) sa, (p3retval *) retval, explain_flag, show_oligo_problems) ;
 
 	OUTPUT:
 

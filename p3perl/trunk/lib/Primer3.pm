@@ -25,6 +25,8 @@ pl_get_rv_per_sequence_errors
 pl_get_rv_output_type
 pl_get_rv_warnings
 pl_get_rv_stop_codon_pos
+pl_get_pair_array_explain_string
+*pl_get_oligo_array_explain_string
 pl_add_to_sa_excl2
 pl_add_to_sa_excl_internal2
 pl_add_to_sa_tar2
