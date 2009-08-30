@@ -1,5 +1,0 @@
-cd z_programming\primer3_Steve\src
-
-mingw32-make -f makefile
-
-primer3_core.exe < in.txt -io_version=1
