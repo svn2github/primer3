@@ -280,10 +280,13 @@ static int   pick_primers_by_position(const int, const int,
 
 static double obj_fn(const p3_global_settings *, primer_pair *);
 
-static int    oligo_in_pair_overlaps_used_oligo(const primer_rec *left,
-                                                const primer_rec *right,
-                                                const pair_array_t *retpair,
-                                                int min_dist);
+static int    left_oligo_in_pair_overlaps_used_oligo(const primer_rec *left,
+                                                     const pair_array_t *retpair,
+                                                     int min_dist);
+
+static int    right_oligo_in_pair_overlaps_used_oligo(const primer_rec *right,
+                                                      const pair_array_t *retpair,
+                                                      int min_dist);
 
 static int    oligo_overlaps_interval(int, int,
                                       const interval_array_t, int);
@@ -1142,6 +1145,25 @@ choose_pair_or_triple(p3retval *retval,
         break;
       }
 
+      
+      if (retval->rev.oligo[i].overlaps || right_oligo_in_pair_overlaps_used_oligo(&retval->rev.oligo[i],
+                                                                                   best_pairs,
+                                                                                   pa->min_three_prime_distance)) {
+        retval->rev.oligo[i].overlaps = 1;
+        /* The stats will not keep track of the pair correctly
+           after the first pass, because an oligo might
+           have been legal on one pass but become illegal on
+           a subsequent pass. */
+        if (update_stats) {
+          if (trace_me)
+            fprintf(stderr,
+                    "i=%d, j=%d, overlaps_oligo_in_better_pair++\n",
+                    i, j);
+          pair_expl->overlaps_oligo_in_better_pair++;
+        }
+        continue;
+      }
+
       /* Loop over forward primers */
       for (j=0; j<retval->fwd.num_elem; j++) {
 
@@ -1175,11 +1197,11 @@ choose_pair_or_triple(p3retval *retval,
           if (trace_me) fprintf(stderr, "updates on\n");
           update_stats = 1;
         }
-        
-        if (oligo_in_pair_overlaps_used_oligo(&retval->fwd.oligo[j],
-                                              &retval->rev.oligo[i],
-                                              best_pairs,
-                                              pa->min_three_prime_distance)) {
+
+        if (retval->fwd.oligo[j].overlaps || left_oligo_in_pair_overlaps_used_oligo(&retval->fwd.oligo[j],
+                                                                                    best_pairs,
+                                                                                    pa->min_three_prime_distance)) {
+          retval->fwd.oligo[j].overlaps = 1;
           /* The stats will not keep track of the pair correctly
              after the first pass, because an oligo might
              have been legal on one pass but become illegal on
@@ -1470,11 +1492,49 @@ oligo_pair_seen(const primer_pair *pair,
          in retpair
 
 */
+
 static int
-oligo_in_pair_overlaps_used_oligo(const primer_rec *left,
-                                  const primer_rec *right,
-                                  const pair_array_t *retpair,
-                                  int min_dist)
+right_oligo_in_pair_overlaps_used_oligo(const primer_rec *right,
+                                        const pair_array_t *retpair,
+                                        int min_dist)
+{
+  const primer_pair *q, *stop;
+  int q_pos, pair_pos;
+
+  /* retpair might not have any pairs in it yet. (add_pair
+     allocates memory for retpair->pairs.) */
+  if (retpair->num_pairs == 0)
+    return 0;
+
+  if (min_dist == -1)
+    return 0;
+
+  q = &retpair->pairs[0];
+
+  stop = &retpair->pairs[retpair->num_pairs];
+
+  for (; q < stop; q++) {
+    q_pos = q->right->start - q->right->length + 1;
+
+    pair_pos = right->start - right->length + 1;
+
+    if ((abs(q_pos - pair_pos) < min_dist)
+             && (min_dist != 0)) { return 1; }
+
+    if ((q->right->length == right->length)
+        && (q->right->start == right->start)
+        && (min_dist == 0)) {
+      return 1;
+    }
+
+  }
+  return 0;
+}
+
+static int
+left_oligo_in_pair_overlaps_used_oligo(const primer_rec *left,
+                                       const pair_array_t *retpair,
+                                       int min_dist)
 {
   const primer_pair *q, *stop;
   int q_pos, pair_pos;
@@ -1504,20 +1564,6 @@ oligo_in_pair_overlaps_used_oligo(const primer_rec *left,
         && (min_dist == 0)) {
       return 1;
     }
-
-    q_pos = q->right->start - q->right->length + 1;
-
-    pair_pos = right->start - right->length + 1;
-
-    if ((abs(q_pos - pair_pos) < min_dist)
-             && (min_dist != 0)) { return 1; }
-
-    if ((q->right->length == right->length)
-        && (q->right->start == right->start)
-        && (min_dist == 0)) { 
-      return 1;
-    }
-
   }
   return 0;
 }
@@ -2071,6 +2117,8 @@ pick_only_best_primer(const int start,
       /* Do not force primer3 to use this oligo */
       h.must_use = 0;
 
+      h.overlaps = 0;
+
       /* Add it to the considered statistics */
       oligo->expl.considered++;
       /* Calculate all the primer parameters */
@@ -2196,6 +2244,8 @@ pick_primer_range(const int start, const int length, int *extreme,
 
       /* Do not force primer3 to use this oligo */
       h.must_use = 0;
+ 
+      h.overlaps = 0;
 
       /* Add it to the considered statistics */
        oligo->expl.considered++;
@@ -2303,6 +2353,8 @@ add_one_primer(const char *primer, int *extreme, oligo_array *oligo,
     /* Force primer3 to use this oligo */
     h.must_use = (1 && pa->pick_anyway);
 
+    h.overlaps = 0;
+
     /* Add it to the considered statistics */
     oligo->expl.considered++;
 
@@ -2395,6 +2447,8 @@ add_one_primer_by_position(int start, int length, int *extreme, oligo_array *oli
 
   /* Force primer3 to use this oligo */
   h.must_use = (1 && pa->pick_anyway);
+
+  h.overlaps = 0;
 
   /* Add it to the considered statistics */
   oligo->expl.considered++;

@@ -517,6 +517,7 @@ typedef struct oligo_problems {
 	char   num_ns;   /* Number of Ns in the oligo. */
 	
 	char   must_use; /* Non-0 if the oligo must be used even if it is illegal. */
+        char   overlaps; /* Non-0 if the oligo overlaps some oligo used in one of the best pairs. */
 	
 	oligo_problems problems;
 	

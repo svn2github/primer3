@@ -52,7 +52,7 @@
 LDLIBS     = -lm
 CC         = gcc
 O_OPTS     = -O0
-CC_OPTS    = -g -Wall -D__USE_FIXED_PROTOTYPES__
+CC_OPTS    = -g -pg -Wall -D__USE_FIXED_PROTOTYPES__
 P_DEFINES  =
 
 CFLAGS  = $(CC_OPTS) $(O_OPTS)
@@ -125,7 +125,7 @@ $(LIBPRIMER3_DYN): libprimer3.o p3_seq_lib.o
 	gcc -shared -W1,-soname,liprimer3.so.1 -o $(LIBPRIMER3_DYN) libprimer3.o p3_seq_lib.o
 
 $(PRIMER_EXE): $(PRIMER_OBJECTS)
-	$(CC) $(LDFLAGS) -o $@ $(PRIMER_OBJECTS) $(LIBOPTS) $(LDLIBS)
+	$(CC) -pg $(LDFLAGS) -o $@ $(PRIMER_OBJECTS) $(LIBOPTS) $(LDLIBS)
 
 libprimer3.o: libprimer3.c libprimer3.h p3_seq_lib.h dpal.h thal.h oligotm.h
 	$(CC) -c $(CFLAGS) $(P_DEFINES) -o $@ libprimer3.c
