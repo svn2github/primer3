@@ -1197,9 +1197,9 @@ choose_pair_or_triple(p3retval *retval,
         /* Characterize the pair. h is intitialized by this
            call. */
         if (PAIR_OK ==
-            characterize_pair(retval, pa, sa,
-                              j, i, product_size_range_index, 
-                              &h, dpal_arg_to_use, thal_arg_to_use, update_stats)) {
+          characterize_pair(retval, pa, sa,
+                            j, i, product_size_range_index, 
+                            &h, dpal_arg_to_use, thal_arg_to_use, update_stats)) {
 
           /* Choose internal oligo if needed */
           if (pa->pick_right_primer && pa->pick_left_primer
@@ -1226,38 +1226,20 @@ choose_pair_or_triple(p3retval *retval,
               fprintf(stderr, "ok++\n");
             pair_expl->ok++;
           }
-              
+
           /* Calculate the pair penalty */
           h.pair_quality = obj_fn(pa, &h);
           PR_ASSERT(h.pair_quality >= 0.0);
-
+              
           /* The current pair (h) is the new best pair if it is:
              1. Better than the best pair so far,
-             2. Not already in pest_pairs, and
-             3. Legal with respect to overlap with better pairs.
+             2. Not already in pest_pairs.
           */
           if ((compare_primer_pair(&h, &the_best_pair) < 0)
               && !oligo_pair_seen(&h, best_pairs)) {
-
-            if (!oligo_in_pair_overlaps_used_oligo(h.left,
-                                                   h.right,
-                                                   best_pairs,
-                                                   pa->min_three_prime_distance)) {
-              the_best_pair = h;
-              the_best_i = i;
-              the_best_j = j;
-
-            } else {
-              if (update_stats) {
-                if (trace_me)
-                  fprintf(stderr,
-                          "ok--, i=%d, j=%d because an oligo in the pair"
-                          " overlaps an oligo already in best_pairs\n",
-                          i, j);
-                pair_expl->ok--;
-                pair_expl->overlaps_oligo_in_better_pair++;
-              }
-            }
+            the_best_pair = h;
+            the_best_i = i;
+            the_best_j = j;
           }
 
           /* There cannot be a better pair */
@@ -3297,9 +3279,9 @@ characterize_pair(p3retval *retval,
   }
 
   if (sa->tar2.count > 0) {
-    if (pair_spans_target(ppair, sa))
+    if (pair_spans_target(ppair, sa)) {
       ppair->target = 1;
-    else {
+    } else {
       ppair->target = -1;
       if (update_stats) { pair_expl->target++; }
       if (!must_use) return PAIR_FAILED;
