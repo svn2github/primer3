@@ -1138,7 +1138,7 @@ choose_pair_or_triple(p3retval *retval,
       if (!OK_OR_MUST_USE(&retval->rev.oligo[i])) continue;
 
       /* If the pair can not be better than the one already 
-       * selected, choose a new pair*/
+       * selected, then we can skip remaining reverse primers */
       if (pa->pr_pair_weights.primer_quality *
            (retval->rev.oligo[i].quality + retval->fwd.oligo[0].quality)
               > the_best_pair.pair_quality) {
@@ -1177,7 +1177,8 @@ choose_pair_or_triple(p3retval *retval,
         if (!OK_OR_MUST_USE(&retval->fwd.oligo[j])) continue;
 
         /* If the pair can not be better than the one already 
-         * selected, choose a new pair*/
+         * selected, then we can skip remaining forward primers 
+         * for this reverse primer */
         if (pa->pr_pair_weights.primer_quality *
             (retval->fwd.oligo[j].quality + retval->rev.oligo[i].quality) 
             > the_best_pair.pair_quality) {
