@@ -807,19 +807,19 @@ create_thal_arg_holder ()
    
    h->any = (thal_args *) pr_safe_malloc(sizeof(*h->any));
    set_thal_default_args(h->any);
-   h->any->type = 1;
+   h->any->type = thal_any;
    
    h->end1 = (thal_args *) pr_safe_malloc(sizeof(*h->end1));
    set_thal_default_args(h->end1);
-   h->end1->type = 2;
+   h->end1->type = thal_end1;
    
    h->end2 = (thal_args *) pr_safe_malloc(sizeof(*h->end2));
    set_thal_default_args(h->end2);
-   h->end2->type = 3;
+   h->end2->type = thal_end2;
    
    h->hairpin_th  = (thal_args *) pr_safe_malloc(sizeof(*h->hairpin_th));
    set_thal_default_args(h->hairpin_th); 
-   h->hairpin_th->type = 4;
+   h->hairpin_th->type = thal_hairpin;
    return h;
 }
 
@@ -1094,11 +1094,11 @@ choose_primers(const p3_global_settings *pa,
 /* ============================================================ */
 static void
 choose_pair_or_triple(p3retval *retval,
-                          const p3_global_settings *pa,
-                          const seq_args *sa,
-                          const dpal_arg_holder *dpal_arg_to_use,
-       		          const thal_arg_holder *thal_arg_to_use,
-                          pair_array_t *best_pairs) {
+                      const p3_global_settings *pa,
+                      const seq_args *sa,
+                      const dpal_arg_holder *dpal_arg_to_use,
+  		      const thal_arg_holder *thal_arg_to_use,
+                      pair_array_t *best_pairs) {
   int i,j; /* Loop index. */
   int n_int; /* Index of the internal oligo */
   int *max_j_seen;   /* The maxium value of j (loop index for forward primers)
@@ -1217,8 +1217,7 @@ choose_pair_or_triple(p3retval *retval,
           continue;
         }
 
-        /* Characterize the pair. h is intitialized by this
-           call. */
+        /* Characterize the pair. h is initialized by this call. */
         if (PAIR_OK ==
           characterize_pair(retval, pa, sa,
                             j, i, product_size_range_index, 
@@ -1272,6 +1271,11 @@ choose_pair_or_triple(p3retval *retval,
         } 
 
       }  /* for (j=0; j<retval->fwd.num_elem; j++) -- inner loop */
+
+      /* Check if there cannot be a better pair than the best found */
+      if (the_best_pair.pair_quality == 0) {
+        break;
+      }
 
     } /* for (i = 0; i < retval->rev.num_elem; i++) --- outer loop */
 

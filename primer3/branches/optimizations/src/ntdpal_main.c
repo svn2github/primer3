@@ -41,9 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 
 int
-main(argc, argv)
-    int argc;
-    const char**argv;
+main(int argc, const char**argv)
 {
     dpal_args a;
     dpal_results r;

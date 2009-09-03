@@ -569,6 +569,8 @@ typedef struct primer_pair {
   primer_rec *right;    /* Right primer. */
   primer_rec *intl;     /* Internal oligo. */
 
+  char   must_use;
+
   int    product_size;  /* Product size. */
   int    target;        /* 
                          * 1 if there is a target between the right and left

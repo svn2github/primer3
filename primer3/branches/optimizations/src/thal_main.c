@@ -175,14 +175,14 @@ if(a.debug == 0) {
 	    exit(-1);
 	 }
 	 if(strcmp(argv[i+1],"END1")==0) {
-	    a.type = 2;
+	    a.type = thal_end1;
 	 } else if(strcmp(argv[i+1],"END2")==0) {
-	    a.type = 3;
+	    a.type = thal_end2;
 	 } else if(strcmp(argv[i+1],"HAIRPIN")==0) {
-	    a.type = 4;
+	    a.type = thal_hairpin;
 	    a.dimer = 0;
 	 } else {
-	    a.type = 1; /* ANY */  
+	    a.type = thal_any; /* ANY */  
 	 }
 	 i++;
       } else if (!strncmp("-d", argv[i], 2)) { /* dna conc */

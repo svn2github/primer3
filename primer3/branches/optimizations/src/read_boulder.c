@@ -99,7 +99,7 @@ extern double strtod();
                                "Duplicate tag: "); \
            pr_append(parse_err, TAG);              \
        } else {                                    \
-           T = _rb_safe_malloc(datum_len + 1);      \
+           T = (char*) _rb_safe_malloc(datum_len + 1);      \
            strcpy(T, datum);                       \
        }                                           \
        continue;                                   \
@@ -247,12 +247,12 @@ read_boulder_record(FILE *file_input,
       COMPARE_FLOAT("PRIMER_MAX_DIFF_TM", pa->max_diff_tm);
       if (COMPARE("PRIMER_TM_SANTALUCIA")) {
         parse_int("PRIMER_TM_SANTALUCIA", datum, &tmp_int, parse_err);
-        pa->tm_santalucia = tmp_int;    /* added by T.Koressaar */
+        pa->tm_santalucia = (tm_method_type) tmp_int;    /* added by T.Koressaar */
         continue;
       }
      if (COMPARE("PRIMER_SALT_CORRECTIONS")) {
         parse_int("PRIMER_SALT_CORRECTIONS", datum, &tmp_int, parse_err);
-        pa->salt_corrections = tmp_int; /* added by T.Koressaar */
+        pa->salt_corrections = (salt_correction_type) tmp_int; /* added by T.Koressaar */
         continue;
       }
       COMPARE_FLOAT("PRIMER_MIN_GC", pa->p_args.min_gc);
@@ -365,7 +365,7 @@ read_boulder_record(FILE *file_input,
           free(repeat_file_path);
           repeat_file_path = NULL;
         } else {
-          repeat_file_path = _rb_safe_malloc(strlen(datum) + 1);
+          repeat_file_path = (char*) _rb_safe_malloc(strlen(datum) + 1);
           strcpy(repeat_file_path, datum);
         }
         continue;
@@ -377,7 +377,7 @@ read_boulder_record(FILE *file_input,
           free(int_repeat_file_path);
           int_repeat_file_path = NULL;
         } else {
-          int_repeat_file_path = _rb_safe_malloc(strlen(datum) + 1);
+          int_repeat_file_path = (char*) _rb_safe_malloc(strlen(datum) + 1);
           strcpy(int_repeat_file_path, datum);
         }
         continue;
@@ -520,12 +520,12 @@ read_boulder_record(FILE *file_input,
       COMPARE_FLOAT("PRIMER_PAIR_MAX_DIFF_TM", pa->max_diff_tm);
       if (COMPARE("PRIMER_TM_FORMULA")) {
           parse_int("PRIMER_TM_FORMULA", datum, &tmp_int, parse_err);
-          pa->tm_santalucia = tmp_int;    /* added by T.Koressaar */
+          pa->tm_santalucia = (tm_method_type) tmp_int;    /* added by T.Koressaar */
           continue;
       }
       if (COMPARE("PRIMER_SALT_CORRECTIONS")) {
         parse_int("PRIMER_SALT_CORRECTIONS", datum, &tmp_int, parse_err);
-        pa->salt_corrections = tmp_int; /* added by T.Koressaar */
+        pa->salt_corrections = (salt_correction_type) tmp_int; /* added by T.Koressaar */
         continue;
       }
       COMPARE_FLOAT("PRIMER_MIN_GC", pa->p_args.min_gc);
@@ -637,7 +637,7 @@ read_boulder_record(FILE *file_input,
           free(repeat_file_path);
           repeat_file_path = NULL;
         } else {
-          repeat_file_path = _rb_safe_malloc(strlen(datum) + 1);
+          repeat_file_path = (char*) _rb_safe_malloc(strlen(datum) + 1);
           strcpy(repeat_file_path, datum);
         }
         continue;
@@ -649,7 +649,7 @@ read_boulder_record(FILE *file_input,
           free(int_repeat_file_path);
           int_repeat_file_path = NULL;
         } else {
-          int_repeat_file_path = _rb_safe_malloc(strlen(datum) + 1);
+          int_repeat_file_path = (char*) _rb_safe_malloc(strlen(datum) + 1);
           strcpy(int_repeat_file_path, datum);
         }
         continue;
@@ -663,14 +663,14 @@ read_boulder_record(FILE *file_input,
       COMPARE_INT("PRIMER_THERMODYNAMIC_ALIGNMENT", pa->thermodynamic_alignment);
       if (COMPARE("PRIMER_THERMODYNAMIC_PARAMETERS_PATH")) {
         if (pa->thermodynamic_params_path == NULL) {
-          pa->thermodynamic_params_path = _rb_safe_malloc(datum_len + 1);
+          pa->thermodynamic_params_path = (char*) _rb_safe_malloc(datum_len + 1);
           strcpy(pa->thermodynamic_params_path, datum);
           pa->thermodynamic_path_changed = 1;
         }
         /* check if path changes */
 	else if (strcmp(pa->thermodynamic_params_path, datum)) {
 	  free(pa->thermodynamic_params_path);
-	  pa->thermodynamic_params_path = _rb_safe_malloc(datum_len + 1); 
+	  pa->thermodynamic_params_path = (char*) _rb_safe_malloc(datum_len + 1); 
 	  strcpy(pa->thermodynamic_params_path, datum);
 	  pa->thermodynamic_path_changed = 1;
         }
@@ -983,9 +983,8 @@ int read_p3_file(const char *file_name,
 }
 
 static void
-tag_syntax_error(tag_name, datum, err)
-    const char *tag_name, *datum;
-    pr_append_str *err;
+tag_syntax_error(const char *tag_name, const char *datum,
+                 pr_append_str *err)
 {
     pr_append_new_chunk(err, "Illegal ");
     pr_append(err, tag_name);
@@ -994,10 +993,8 @@ tag_syntax_error(tag_name, datum, err)
 }
 
 static void
-parse_double(tag_name, datum, out, err)
-    const char *datum, *tag_name;
-    double *out;
-    pr_append_str *err;
+parse_double(const char *tag_name, const char *datum,
+             double *out, pr_append_str *err)
 {
     char *nptr;
     *out = strtod(datum, &nptr);
@@ -1018,10 +1015,8 @@ parse_double(tag_name, datum, out, err)
 }
 
 static void
-parse_int(tag_name, datum, out, err)
-    const char *datum, *tag_name;
-    int *out;
-    pr_append_str *err;
+parse_int(const char *tag_name, const char *datum,
+          int *out, pr_append_str *err)
 {
     char *nptr;
     long tlong;
@@ -1053,11 +1048,10 @@ parse_int(tag_name, datum, out, err)
  * out2.  On incorrect input, return NULL;
  */
 static const char *
-parse_int_pair(tag_name, datum, sep, out1, out2, err)
-    const char    *tag_name, *datum;
-    char          sep;          /* The separator, e.g. ',' or '-'. */
-    int           *out1, *out2; /* The 2 integers. */
-    pr_append_str *err;         /* Error messages. */
+parse_int_pair(const char    *tag_name, const char *datum,
+               char          sep,              /* The separator, e.g. ',' or '-'. */
+               int           *out1, int *out2, /* The 2 integers. */
+               pr_append_str *err)             /* Error messages. */
 {
     char *nptr, *tmp;
     long tlong;
@@ -1159,11 +1153,9 @@ parse_intron_list(char *s,
 }
 
 static void
-parse_product_size(tag_name, in, pa, err)
-    const char *tag_name;
-    char *in;
-    p3_global_settings *pa;
-    pr_append_str *err;
+parse_product_size(const char *tag_name, char *in,
+                   p3_global_settings *pa,
+                   pr_append_str *err)
 {
     char *q, *s = in;
     const char *p;
