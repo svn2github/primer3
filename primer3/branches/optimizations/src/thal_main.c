@@ -240,7 +240,7 @@ if(a.debug == 0) {
 #endif
 	    exit(-1);
 	 }
-	 a.maxLoop = strtod(argv[i+1], &endptr);
+	 a.maxLoop = (int) (strtod(argv[i+1], &endptr));
 		 
 	 if(a.maxLoop > MAX_LOOP ) {
 	    a.maxLoop = MAX_LOOP;
