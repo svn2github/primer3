@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<primer3Doc version="1.0">
+<!--
+Copyright (c) 1996,1997,1998,1999,2000,2001,2004,2006,2007,2008
+Whitehead Institute for Biomedical Research, Steve Rozen
+(http://purl.com/STEVEROZEN/), Andreas Untergasser and Helen Skaletsky.
+All rights reserved.
+
+    This file is part of the primer3 suite and libraries.
+
+    The primer3 suite and libraries are free software;
+    you can redistribute them and/or modify them under the terms
+    of the GNU General Public License as published by the Free
+    Software Foundation; either version 2 of the License, or (at
+    your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this software (file gpl-2.0.txt in the source
+    distribution); if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+	
+An example Tag with all possible options:
+
+<tag>
+	<tagName></tagName>
+	<description>
+<![CDATA[<p> </p>]]>
+	</description>
+</tag>
+
+	-->
+<tag>
+	<tagName>-about</tagName>
+	<description>
+<![CDATA[<p>With this argument primer3 generates one line of output
+indicating the release number:
+<pre>
+primer3 release &lt;release number&gt;
+</pre>
+and then exits. This allows scripts to 
+query primer3 for its version.</p>]]>
+	</description>
+</tag>
+<tag>
+	<tagName>-format_output</tagName>
+	<description>
+<![CDATA[<p>This argument indicates that primer3_core should generate
+user-oriented (rather than program-oriented) output.</p>]]>
+	</description>
+</tag>
+<tag>
+	<tagName>-strict_tags</tagName>
+	<description>
+<![CDATA[<p>This argument indicates that primer3_core should generate
+a fatal error if there is any tag in the input that
+it does not recognize.</p>]]>
+	</description>
+</tag>
+<tag>
+	<tagName>-p3_settings_file=<i>file_path</i> </tagName>
+	<description>
+<![CDATA[<p>This argument specifies a settings file,
+<i>file_path</i>. Primer3 reads the global 
+("PRIMER_...") parameters from this file first. 
+Tags appearing in the settings file override
+default primer3 settings. The values set in
+the settings files can be also overridden 
+by tags in the input file. See
+primer3 file documentation for details on the file 
+format.</p>]]>
+	</description>
+</tag>
+<tag>
+	<tagName>-echo_settings_file</tagName>
+	<description>
+<![CDATA[<p>This argument indicates that primer3_core
+should print the input tags specified
+in the given settings file. If no settings file is
+provided or if the -format_output option is given,
+this argument will have no effect.</p>]]>
+	</description>
+</tag>
+<tag>
+	<tagName>-io_version=<i>n</i></tagName>
+	<description>
+<![CDATA[<p>This argument directs primer3 to use
+io version <i>n</i> input and output conventions.
+<i>n</i> can be 3 (for mostly backward
+compatible behavior) or 4.
+-io_version=4 is required to use functionality that 
+is new in release 2.0.0 and later.</p>]]>
+	</description>
+</tag>
+
+<tag>
+	<tagName>-2x_compat</tagName>
+	<description>
+<![CDATA[<p>This argument is no longer supported.</p>]]>
+	</description>
+</tag>
+<tag>
+        <tagName>-output=<i>file_path</i></tagName>
+        <description>
+<![CDATA[<p>This argument specifies the file where the output
+should be written. If omitted, stdout is used. </p>]]>
+        </description>
+</tag>
+<tag>
+        <tagName>-error=<i>file_path</i></tagName>
+        <description>
+<![CDATA[<p>This argument specifies the file where the error 
+messages should be written. If omitted, stderr is used.</p>]]>
+        </description>
+</tag>
+</primer3Doc>
