@@ -1,0 +1,119 @@
+No mispriming library specified
+Using 1-based sequence positions
+OLIGO            start  len      tm     gc%  any_th  3'_th hairpin seq
+LEFT PRIMER        128   20   58.98   55.00    0.00   0.00    0.00 TACGCACTCATCGACCTCTC
+RIGHT PRIMER       357   20   58.95   50.00    0.00   0.00    0.00 AGCTTCCTCACGAACTTCCA
+SEQUENCE SIZE: 1497
+INCLUDED REGION SIZE: 1497
+
+PRODUCT SIZE: 230, PAIR ANY_TH COMPL: 0.00, PAIR 3'_TH COMPL: 0.00
+
+    1 TCTGCACTTGCGTCCCACACCCACTGCAAAATCAAAAGCACTTCGCCATCTCCCAAACCC
+                                                                  
+
+   61 ACCAAGCCCAAAGCCTCGTCTTCCCTTCATAGGACACCTTCATCTCTTAAAAGACAAACT
+                                                                  
+
+  121 TCTCCACTACGCACTCATCGACCTCTCCAAAAAACATGGTCCCTTATTCTCTCACTACTT
+             >>>>>>>>>>>>>>>>>>>>                                 
+
+  181 TGGCTCCATGCCAACCGTTGTTGCCTCCACACCAGAATTGTTCAAGCTCTTCCTCCAAAC
+                                                                  
+
+  241 GAACGAGGCAACTTCCTTCAACACAAGGTTCCAAACCTCAGCCATAAGACGCCTCACCTA
+                                                                  
+
+  301 TGATAGCTCAGTGGCCATGGTTCCCTTCGGACCTTACTGGAAGTTCGTGAGGAAGCTCAT
+                                           <<<<<<<<<<<<<<<<<<<<   
+
+  361 CATGAACGACCTTCTCAACGCCACCACTGTAAACAAGTTGAGGCCTTTGAGGACCCAACA
+                                                                  
+
+  421 GATCCGCAAGTTCCTTAGGGCTATGGCCCAAGGCGCAGAGGCACGGAAGCCCCTTGACTT
+                                                                  
+
+  481 GACCGAGGAGCTTCTGAAATGGGCCAACAGCACCATCTCCATGATGATGCTCGGCGAGGC
+                                                                  
+
+  541 TGAGGAGATCAGAGACATCGCTCGCGAGGTTCTTAAGATCTTTGGCGAATACAGCCTCAC
+                                                                  
+
+  601 TGACTTCATCTGGCCATTGAAGCATCTCAAGGTTGGAAAGTATGAGAAGAGGATCGACGA
+                                                                  
+
+  661 CATCTTGAACAAGTTCGACCCTGTCGTTGAAAGAGTCATCAAGAAGCGCCGTGAGATCGT
+                                                                  
+
+  721 GAGGAGGAGAAAGAACGGAGAGGTTGTTGAGGGTGAGGTCAGCGGGGTTTTCCTTGACAC
+                                                                  
+
+  781 TTTGCTTGAATTCGCTGAGGATGAGACCATGGAGATCAAAATCACCAAGGACCACACCAA
+                                                                  
+
+  841 GGGTCTTGTTGTCGACTTCTTCTCGGCAGGAACAGACTCCACAGCGGTGGCAACAGAGTG
+                                                                  
+
+  901 GGCATTGGCAGAACTCATCAACAATCCTAAGGTGTTGGAAAAGGCTCGTGAGGAGGTCTA
+                                                                  
+
+  961 CAGTGTTGTGGGAAAGGACAGACTTGTGGACGAAGTTGACACTCAAAACCTTCCTTACAT
+                                                                  
+
+ 1021 TAGAGCAATCGTGAAGGAGACATTCCGCATGCACCCGCCACTCCCAGTGGTCAAAAGAAA
+                                                                  
+
+ 1081 GTGCACAGAAGAGTGTGAGATTAATGGATATGTGATCCCAGAGGGAGCATTGATTCCCTT
+                                                                  
+
+ 1141 CAATGTATGGCAAGTAGGAAGAGACCCCAAATACTGGGACAGACCATCGGAGTTCCGTCC
+                                                                  
+
+ 1201 TGAGAGGTTCCTAGAGACAGGGGCTGAAGGGGAAGCAAGGCCTCTTGATCTTAGGGGACA
+                                                                  
+
+ 1261 ACATTTTCAACTTCTCCCATTTGGGTCTGGGAGGAGAATGTGCCCTGGAGTCAATCTGGC
+                                                                  
+
+ 1321 TACTTCGGGAACGGCAACACTTCTTGCATCTCTTATTCAGTGCTTTGACTTGCAAGTGCT
+                                                                  
+
+ 1381 GGGTCCACAGGGACAGATATTGAAGGGTGGTGACGCCAAAGTTAGCATGGAAGAGAGAGC
+                                                                  
+
+ 1441 CGGCCTCACTGTTCCAAGGGCACATAGTCTTGTCTGTGTTCCACTTGCAAGGATCGG
+                                                               
+
+KEYS (in order of precedence):
+>>>>>> left primer
+<<<<<< right primer
+
+ADDITIONAL OLIGOS
+                    start  len      tm     gc%  any_th  3'_th hairpin seq
+
+ 1 LEFT PRIMER         15   20   58.96   50.00    0.00   0.00    0.00 CCACACCCACTGCAAAATCA
+   RIGHT PRIMER       256   20   59.06   50.00    0.00   0.00    0.00 GGAAGTTGCCTCGTTCGTTT
+   PRODUCT SIZE: 242, PAIR ANY_TH COMPL: 0.00, PAIR 3'_TH COMPL: 0.00
+
+ 2 LEFT PRIMER        303   20   59.08   50.00   14.67   3.73    0.00 ATAGCTCAGTGGCCATGGTT
+   RIGHT PRIMER       509   20   59.03   50.00    0.00   0.00    0.00 TGTTGGCCCATTTCAGAAGC
+   PRODUCT SIZE: 207, PAIR ANY_TH COMPL: 0.00, PAIR 3'_TH COMPL: 0.00
+
+ 3 LEFT PRIMER        737   20   58.94   55.00    0.00   0.00    0.00 GGAGAGGTTGTTGAGGGTGA
+   RIGHT PRIMER       953   20   59.12   55.00    0.00   0.00    0.00 CCTCACGAGCCTTTTCCAAC
+   PRODUCT SIZE: 217, PAIR ANY_TH COMPL: 10.32, PAIR 3'_TH COMPL: 6.95
+
+ 4 LEFT PRIMER        226   20   59.21   55.00    0.00   0.00    0.00 GCTCTTCCTCCAAACGAACG
+   RIGHT PRIMER       395   20   58.98   50.00    0.00   0.00    0.00 TGTTTACAGTGGTGGCGTTG
+   PRODUCT SIZE: 170, PAIR ANY_TH COMPL: 0.00, PAIR 3'_TH COMPL: 0.00
+
+Statistics
+         con   too    in    in   not          no    tm    tm   high  high  high        high      
+         sid  many   tar  excl    ok   bad    GC   too   too any_th 3'_th hair-  poly   end      
+        ered    Ns   get   reg   reg   GC% clamp   low  high  compl compl   pin     X  stab    ok
+Left    8303     0     0     0     0   125     0  3089  1736      0     0    28    20     0  3305
+Right   8303     0     0     0     0   124     0  3127  1681      0     0     8    20     0  3343
+Pair Stats:
+considered 4353, unacceptable product size 4348, primer in pair overlaps a primer in a better pair 144, ok 5
+libprimer3 release 2.3.5
+
+
