@@ -1,0 +1,1 @@
+<?php header("Location: http://fokker.wi.mit.edu/primer3/"); exit; ?>
