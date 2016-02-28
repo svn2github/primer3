@@ -4,9 +4,7 @@ include("header.php");
 
 <div id="main">
 	
-<p>The information below is meant to provide an "easy" means of locating and downloading the code/binaries you need to run Primer3.  As such, we have provided links to help you reach the most recent versions of the software.  Older versions of the software (&lt; 1.0.1) are available at the bottom of the page.</p>
-
-<p>ALL current downloads are also available from the <a href="https://sourceforge.net/project/showfiles.php?group_id=112461">SourceForge Downloads Page</a>.</p>
+<p>The information below is meant to provide an "easy" means of locating and downloading the code/binaries you need to run Primer3.  As such, we have provided links to help you reach the most recent versions of the software.  ALL downloads including older versions of the software are available from the <a href="https://sourceforge.net/projects/primer3/files/">SourceForge Downloads Page</a>.</p>
 
 <h2 id="primer3theccode">Primer3 (the C code)</h2>
 
