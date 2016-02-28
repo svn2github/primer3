@@ -22,10 +22,9 @@
 		<ul>
 			<li id="nav-home"><a href="/">Home</a></li>
 			<li id="nav-webif"><a href="webif.php">Web Interface</a></li>
-			<li id="nav-dload"><a href="releases.php">Download</a></li>
-			<!-- <li id="nav-wiki"><a href="http://primer3.wiki.sourceforge.net/">Wiki</a></li> -->
-			<!-- <li id="nav-faq"><a href="http://primer3.wiki.sourceforge.net/Frequently+Asked+Questions">FAQ</a></li> -->
-			<!-- <li id="nav-developers"><a href="http://primer3.wiki.sourceforge.net/Information+for+Primer3+Developers">Developers</a></li> -->
+			<li id="nav-doc"><a href="primer3_manual.htm">Manual</a></li>
+                        <li id="nav-tickets"><a href="https://sourceforge.net/p/primer3/feature-requests/?source=navbar">Contact</a></li>
+                        <li id="nav-dload"><a href="releases.php">Download</a></li>
 			<li id="nav-history"><a href="history.php">History</a></li>
 		</ul>
 		<span id="navclear"></span>
